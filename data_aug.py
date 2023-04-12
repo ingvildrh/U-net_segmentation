@@ -1,4 +1,5 @@
 import os
+import shutil
 import numpy as np
 import cv2
 from glob import glob
@@ -7,12 +8,40 @@ import imageio
 from albumentations import HorizontalFlip, VerticalFlip, Rotate
 from imutils import paths
 
+'''
+This program loads mask labels and images from a train directoy and a test directory and annotate them
+'''
+DATASET = '113_0329'
 
-""" Create a directory """
+''' Set the data paths '''
+data_path = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_" + DATASET +  "/train_images"
+mask_path = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_" + DATASET +  "/train_masks"
+test_path = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_" + DATASET +  "/val_images"
+ground_truth = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_" + DATASET +  "/val_masks"
+
+print(data_path)
+
+''' Set the paths for the augmented data '''
+AUGMENTED_DATA_BASE_PATH = 'new_data_' + DATASET + "/"
+
+train_images =  AUGMENTED_DATA_BASE_PATH + 'train/image/'
+train_masks = AUGMENTED_DATA_BASE_PATH + "train/mask/"
+test_images = AUGMENTED_DATA_BASE_PATH + "test/image/"
+test_masks = AUGMENTED_DATA_BASE_PATH + "test/mask/"
+
+''' 
+Create a directory 
+'''
 def create_dir(path):
     if not os.path.exists(path):
         os.makedirs(path)
 
+
+'''
+Loads data from paths 
+Input: paths to images, masks, test images and tests ground truths
+Output: lits of file paths for all train_x, train_y, test_x, test_y
+'''
 def load_data(path_img, path_mask, path_test_img, path_ground_truth):
     train_x = sorted(list(paths.list_images(path_img)))
     train_y = sorted(list(paths.list_images(path_mask)))
@@ -22,6 +51,12 @@ def load_data(path_img, path_mask, path_test_img, path_ground_truth):
 
     return (train_x, train_y), (test_x, test_y)
 
+
+'''
+Augment the images data and the corresponding mask label data with 3 methods and save them to a different folders for training.
+Test data is not annotated. 
+Input: images to annotate, corresponding masks to annotate, path for saving of annotations, augment=True
+'''
 def augment_data(images, masks, save_path, augment=True):
     size = (512, 512)
 
@@ -76,16 +111,11 @@ def augment_data(images, masks, save_path, augment=True):
    
    
         
+def main():
 
-if __name__ == "__main__":
     """ Seeding """
     np.random.seed(42)
     
-    """ Load the data """
-    data_path = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/CREATING MASKS/train_images"
-    mask_path = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/CREATING MASKS/train_masks"
-    test_path = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/CREATING MASKS/val_images"
-    ground_truth = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/CREATING MASKS/val_masks"
     (train_x, train_y), (test_x, test_y) = load_data(data_path, mask_path, test_path, ground_truth)
 
     print("Train: ")
@@ -93,12 +123,16 @@ if __name__ == "__main__":
     print("Test: ")
     print(len(test_x), len(test_y))
 
-    """ Create directories to save the augmented data """
-    create_dir("new_data/train/image/")
-    create_dir("new_data/train/mask/")
-    create_dir("new_data/test/image/")
-    create_dir("new_data/test/mask/")
+    ''' Create directories to save the augmented data '''
+    create_dir(train_images)
+    create_dir(train_masks)
+    create_dir(test_images)
+    create_dir(test_masks)
 
     """ Data augmentation"""
-    augment_data(train_x, train_y, "new_data/train/", augment=True)
-    augment_data(test_x, test_y, "new_data/test/", augment=False)
+    augment_data(train_x, train_y, AUGMENTED_DATA_BASE_PATH + "/train/", augment=True)
+    print("her")
+    augment_data(test_x, test_y, AUGMENTED_DATA_BASE_PATH + "/test/", augment=False)
+
+if __name__ == "__main__":
+    main()
