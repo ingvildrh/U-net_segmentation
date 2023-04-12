@@ -19,7 +19,7 @@ mask_path = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_"
 test_path = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_" + DATASET +  "/val_images"
 ground_truth = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_" + DATASET +  "/val_masks"
 
-print(data_path)
+
 
 ''' Set the paths for the augmented data '''
 AUGMENTED_DATA_BASE_PATH = 'new_data_' + DATASET + "/"

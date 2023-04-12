@@ -12,6 +12,7 @@ from utils import seeding, create_dir, epoch_time
 from data import DriveDataset
 from imutils import paths
 import matplotlib.pyplot as plt
+from data_aug import DATASET, AUGMENTED_DATA_BASE_PATH
 
 '''
 To prepare data for training, the image paths need to be modified in this file and in data_aug.py
@@ -19,8 +20,8 @@ To augmentate the images correctly, please run data_aug.py first
 '''
 
 
-IMAGE_DATASET_PATH = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/CREATING MASKS/annotated_images"
-MASK_DATASET_PATH = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/CREATING MASKS/mask_labels"
+#IMAGE_DATASET_PATH = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/CREATING MASKS/annotated_images"
+#MASK_DATASET_PATH = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/CREATING MASKS/mask_labels"
 
 loss_dict = {"train_loss": [], "validation_loss": []}
 
@@ -66,11 +67,11 @@ if __name__ == "__main__":
     create_dir("files")
 
     """ Load dataset """
-    train_x = sorted(list(paths.list_images("new_data/train/image")))
-    train_y = sorted(list(paths.list_images("new_data/train/mask")))
+    train_x = sorted(list(paths.list_images(AUGMENTED_DATA_BASE_PATH + 'train/image/')))
+    train_y = sorted(list(paths.list_images(AUGMENTED_DATA_BASE_PATH + "train/mask/")))
 
-    valid_x = sorted(list(paths.list_images("new_data/test/image")))
-    valid_y = sorted(list(paths.list_images("new_data/test/mask")))
+    valid_x = sorted(list(paths.list_images(AUGMENTED_DATA_BASE_PATH + "test/image/")))
+    valid_y = sorted(list(paths.list_images(AUGMENTED_DATA_BASE_PATH + "test/mask/")))
 
 
     data_str = f"Dataset Size:\nTrain: {len(train_x)} - Valid: {len(valid_x)}\n"
@@ -84,7 +85,7 @@ if __name__ == "__main__":
     batch_size = 2
     num_epochs = 50
     lr = 1e-4
-    checkpoint_path = "files/checkpoint.pth"
+    checkpoint_path = "files/checkpoint" + DATASET + ".pth"
 
     """ Dataset and loader """
     train_dataset = DriveDataset(train_x, train_y)
@@ -114,7 +115,7 @@ if __name__ == "__main__":
 
     """ Training the model """
     best_valid_loss = float("inf")
-    print("training the model")
+    print("Training the model for the dataset", DATASET)
     for epoch in range(num_epochs):
         start_time = time.time()
 
@@ -133,7 +134,7 @@ if __name__ == "__main__":
         plt.xlabel("Epoch #")
         plt.ylabel("Loss")
         plt.legend(loc="lower left")
-        plt.savefig(os.path.sep.join(["plots", "loss_plot.png"]))
+        plt.savefig(os.path.sep.join(["plots", "loss_plot" + DATASET+ " .png"]))
 
         """ Saving the model """
         if valid_loss < best_valid_loss:

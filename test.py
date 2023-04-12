@@ -11,6 +11,7 @@ from sklearn.metrics import accuracy_score, f1_score, jaccard_score, precision_s
 from model import build_unet
 from utils import create_dir, seeding
 from imutils import paths
+from data_aug import DATASET, AUGMENTED_DATA_BASE_PATH
 
 def calculate_metrics(y_true, y_pred):
     """ Ground truth """
@@ -38,7 +39,9 @@ def mask_parse(mask):
     mask = np.concatenate([mask, mask, mask], axis=-1)  ## (512, 512, 3)
     return mask
 
-if __name__ == "__main__":
+
+
+def main():
     """ Seeding """
     seeding(42)
 
@@ -46,15 +49,17 @@ if __name__ == "__main__":
     create_dir("results")
 
     """ Load dataset """
-    test_x = sorted(list(paths.list_images("new_data/test/image")))
-    test_y = sorted(list(paths.list_images("new_data/test/mask")))
+    #test_x = sorted(list(paths.list_images(AUGMENTED_DATA_BASE_PATH + 'test/image/')))
+    #test_y = sorted(list(paths.list_images(AUGMENTED_DATA_BASE_PATH + 'test/mask/')))
+    test_x = sorted(list(paths.list_images('new_data_' + '114_0330' + "/" + 'test/image/')))
+    test_y = sorted(list(paths.list_images('new_data_' + '114_0330' + "/"  + 'test/mask/')))
    
 
     """ Hyperparameters """
     H = 512
     W = 512
     size = (W, H)
-    checkpoint_path = "files/checkpoint.pth"
+    checkpoint_path = "files/checkpoint" + DATASET + ".pth"
 
     """ Load the checkpoint """
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -123,8 +128,7 @@ if __name__ == "__main__":
             pred_test = mask_parse(pred_test)
             line = np.ones((size[1], 10, 3)) * 128
             cat_images = np.concatenate([image, line, overlayed_image], axis=1)
-            print("hello")
-            cv2.imwrite(f"predicted_segmentations/{name}.png", cat_images)
+            cv2.imwrite(f"predicted_segmentations_{DATASET}/{name}.png", cat_images)
 
 
             pred_y = pred_y > 0.5
@@ -138,7 +142,7 @@ if __name__ == "__main__":
         cat_images = np.concatenate(
             [image, line, ori_mask, line, pred_y * 255], axis=1
         )
-        cv2.imwrite(f"results/{name}.png", cat_images)
+        cv2.imwrite(f"results_{DATASET}/{name}.png", cat_images)
 
     jaccard = metrics_score[0]/len(test_x)
     f1 = metrics_score[1]/len(test_x)
@@ -149,3 +153,7 @@ if __name__ == "__main__":
 
     fps = 1/np.mean(time_taken)
     print("FPS: ", fps)
+
+
+if __name__ == "__main__":
+    main()
