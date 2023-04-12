@@ -110,21 +110,21 @@ if __name__ == "__main__":
             pred_test = pred_y > 0.5
             pred_test = np.array(pred_test, dtype=np.uint8)
             pred_test = 1 - pred_test
-            cv2.imshow("win", pred_test)
+
+            
+            white = np.ones((512, 512, 3), dtype = np.uint8) 
+            white[pred_test == 0] = [1,255,1]
+            cv2.imshow("win", white)
             cv2.waitKey(0)
             
-            print(pred_test.shape)
-            white = np.ones((512, 512, 3), dtype = np.uint8)
-            white[pred_test == 0] = [0,255,0]
-            
-            overlayed_image = cv2.addWeighted(image, 0.5, white, 0.5, 0)
+            overlayed_image = cv2.addWeighted(image, 1, white, 0.5, 0.0)
 
             ori_mask2 = mask_parse(mask)
             pred_test = mask_parse(pred_test)
             line = np.ones((size[1], 10, 3)) * 128
-            cat_images = np.concatenate([image, line, ori_mask2, line, overlayed_image], axis=1)
+            cat_images = np.concatenate([image, line, overlayed_image], axis=1)
             print("hello")
-            cv2.imwrite(f"results2/{name}.png", cat_images)
+            cv2.imwrite(f"predicted_segmentations/{name}.png", cat_images)
 
 
             pred_y = pred_y > 0.5
