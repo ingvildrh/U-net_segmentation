@@ -60,6 +60,7 @@ def evaluate(model, loader, loss_fn, device):
     return epoch_loss
 
 if __name__ == "__main__":
+    
     """ Seeding """
     seeding(42)
 
@@ -105,7 +106,8 @@ if __name__ == "__main__":
         num_workers=2
     )
 
-    device = torch.device('cuda')   ## GTX 1060 6GB
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")   ## GTX 1060 6GB
+    print("Running on:", device)
     model = build_unet()
     model = model.to(device)
 

@@ -7,11 +7,22 @@ from tqdm import tqdm
 import imageio
 import torch
 from sklearn.metrics import accuracy_score, f1_score, jaccard_score, precision_score, recall_score
+import matplotlib.pyplot as plt
 
 from model import build_unet
 from utils import create_dir, seeding
 from imutils import paths
 from data_aug import DATASET, AUGMENTED_DATA_BASE_PATH
+
+
+DATASET = '999_9999'
+
+def iou(y_true, y_pred):
+    intersection = (y_true * y_pred).sum()
+    union = y_true.sum() + y_pred.sum() - intersection
+    x = (intersection + 1e-15) / (union + 1e-15)
+    return x
+
 
 def calculate_metrics(y_true, y_pred):
     """ Ground truth """
@@ -31,8 +42,31 @@ def calculate_metrics(y_true, y_pred):
     score_recall = recall_score(y_true, y_pred)
     score_precision = precision_score(y_true, y_pred)
     score_acc = accuracy_score(y_true, y_pred)
+    score_iou = iou(y_true, y_pred)
 
-    return [score_jaccard, score_f1, score_recall, score_precision, score_acc]
+    return [score_jaccard, score_f1, score_recall, score_precision, score_acc, score_iou]
+
+
+    
+
+def calculate_precicion_recall(y_true, y_pred):
+    """ Ground truth """
+    y_true = y_true.cpu().numpy()
+    y_true = y_true > 0.5
+    y_true = y_true.astype(np.uint8)
+    y_true = y_true.reshape(-1)
+
+    """ Prediction """
+    y_pred = y_pred.cpu().numpy()
+    y_pred = y_pred > 0.5
+    y_pred = y_pred.astype(np.uint8)
+    y_pred = y_pred.reshape(-1)
+
+    score_recall = recall_score(y_true, y_pred)
+    score_precision = precision_score(y_true, y_pred)
+
+    return score_recall, score_precision
+
 
 def mask_parse(mask):
     mask = np.expand_dims(mask, axis=-1)    ## (512, 512, 1)
@@ -42,6 +76,7 @@ def mask_parse(mask):
 
 
 def main():
+    print('Performing test on dataset', DATASET)
     """ Seeding """
     seeding(42)
 
@@ -51,8 +86,8 @@ def main():
     """ Load dataset """
     #test_x = sorted(list(paths.list_images(AUGMENTED_DATA_BASE_PATH + 'test/image/')))
     #test_y = sorted(list(paths.list_images(AUGMENTED_DATA_BASE_PATH + 'test/mask/')))
-    test_x = sorted(list(paths.list_images('new_data_' + '114_0330' + "/" + 'test/image/')))
-    test_y = sorted(list(paths.list_images('new_data_' + '114_0330' + "/"  + 'test/mask/')))
+    test_x = sorted(list(paths.list_images('new_data_' + DATASET + "/" + 'test/image/')))
+    test_y = sorted(list(paths.list_images('new_data_' + DATASET + "/"  + 'test/mask/')))
    
 
     """ Hyperparameters """
@@ -69,8 +104,11 @@ def main():
     model.load_state_dict(torch.load(checkpoint_path, map_location=device))
     model.eval()
 
-    metrics_score = [0.0, 0.0, 0.0, 0.0, 0.0]
+    metrics_score = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     time_taken = []
+    recall_list = []
+    precision_list = []
+
 
     for i, (x, y) in tqdm(enumerate(zip(test_x, test_y)), total=len(test_x)):
         """ Extract the name """
@@ -97,6 +135,8 @@ def main():
         y = torch.from_numpy(y)
         y = y.to(device)
 
+        
+
         with torch.no_grad():
             """ Prediction and Calculating FPS """
             start_time = time.time()
@@ -105,9 +145,13 @@ def main():
             total_time = time.time() - start_time
             time_taken.append(total_time)
 
-
+            """ Calculate metrics """
             score = calculate_metrics(y, pred_y)
             metrics_score = list(map(add, metrics_score, score))
+            recall, precision = calculate_precicion_recall(y, pred_y)
+            recall_list.append(recall)
+            precision_list.append(precision)
+           
             pred_y = pred_y[0].cpu().numpy()        ## (1, 512, 512)
             pred_y = np.squeeze(pred_y, axis=0)     ## (512, 512)
             
@@ -119,8 +163,6 @@ def main():
             
             white = np.ones((512, 512, 3), dtype = np.uint8) 
             white[pred_test == 0] = [1,255,1]
-            cv2.imshow("win", white)
-            cv2.waitKey(0)
             
             overlayed_image = cv2.addWeighted(image, 1, white, 0.5, 0.0)
 
@@ -149,10 +191,18 @@ def main():
     recall = metrics_score[2]/len(test_x)
     precision = metrics_score[3]/len(test_x)
     acc = metrics_score[4]/len(test_x)
-    print(f"Jaccard: {jaccard:1.4f} - F1: {f1:1.4f} - Recall: {recall:1.4f} - Precision: {precision:1.4f} - Acc: {acc:1.4f}")
+    iou_mean = metrics_score[5]/len(test_x)
+    print(f"Jaccard: {jaccard:1.4f} - F1: {f1:1.4f} - Recall: {recall:1.4f} - Precision: {precision:1.4f} - Acc: {acc:1.4f} - IOU: {iou_mean:1.4f}")
 
     fps = 1/np.mean(time_taken)
     print("FPS: ", fps)
+
+    # x = recall_list
+    # y = precision_list
+    # print(x)
+    # print(y)
+    # plt.plot(x,y)
+    # plt.show()
 
 
 if __name__ == "__main__":

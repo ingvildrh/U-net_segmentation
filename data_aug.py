@@ -11,7 +11,7 @@ from imutils import paths
 '''
 This program loads mask labels and images from a train directoy and a test directory and annotate them
 '''
-DATASET = '113_0329'
+DATASET = '999_9999'
 
 ''' Set the data paths '''
 data_path = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_" + DATASET +  "/train_images"
