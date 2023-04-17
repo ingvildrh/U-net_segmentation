@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 from model import build_unet
 from utils import create_dir, seeding
 from imutils import paths
+from sklearn.metrics import precision_recall_curve, average_precision_score, roc_auc_score, auc, roc_curve
 from data_aug import DATASET, AUGMENTED_DATA_BASE_PATH
 
 
@@ -47,6 +48,25 @@ def calculate_metrics(y_true, y_pred):
     return [score_jaccard, score_f1, score_recall, score_precision, score_acc, score_iou]
 
 
+def evaluation(y_true, y_pred):
+    """ Ground truth """
+    y_true = y_true.cpu().numpy()
+    y_true = y_true > 0.5
+    y_true = y_true.astype(np.uint8)
+    y_true = y_true.reshape(-1)
+
+    """ Prediction """
+    y_pred = y_pred.cpu().numpy()
+    y_pred = y_pred > 0.5
+    y_pred = y_pred.astype(np.uint8)
+    y_pred = y_pred.reshape(-1)
+
+    precision, recall, thresholds = precision_recall_curve(y_true, y_pred)
+    fpr, tpr, thresholds = roc_curve(y_true, y_pred)
+
+    print('ROC', auc(fpr, tpr))
+        
+    print('PR AUC', auc(recall, precision))
     
 
 def calculate_precicion_recall(y_true, y_pred):
@@ -73,6 +93,17 @@ def mask_parse(mask):
     mask = np.concatenate([mask, mask, mask], axis=-1)  ## (512, 512, 3)
     return mask
 
+def save_predicted_segmentation_images(y_pred, image, mask, size, name):
+    y_pred = 1 - y_pred
+
+    white = np.ones((512, 512, 3), dtype = np.uint8) 
+    white[y_pred == 0] = [1,255,1]
+    
+    overlayed_image = cv2.addWeighted(image, 1, white, 0.5, 0.0)
+
+    line = np.ones((size[1], 10, 3)) * 128
+    cat_images = np.concatenate([image, line, overlayed_image], axis=1)
+    cv2.imwrite(f"predicted_segmentations_{DATASET}/{name}.png", cat_images)
 
 
 def main():
@@ -148,33 +179,19 @@ def main():
             """ Calculate metrics """
             score = calculate_metrics(y, pred_y)
             metrics_score = list(map(add, metrics_score, score))
+            evaluation(y, pred_y)
             recall, precision = calculate_precicion_recall(y, pred_y)
+            
             recall_list.append(recall)
             precision_list.append(precision)
            
             pred_y = pred_y[0].cpu().numpy()        ## (1, 512, 512)
             pred_y = np.squeeze(pred_y, axis=0)     ## (512, 512)
-            
-            #prøver å få et sånt segmenterings kart og ikke kun et binært bilde
-            pred_test = pred_y > 0.5
-            pred_test = np.array(pred_test, dtype=np.uint8)
-            pred_test = 1 - pred_test
-
-            
-            white = np.ones((512, 512, 3), dtype = np.uint8) 
-            white[pred_test == 0] = [1,255,1]
-            
-            overlayed_image = cv2.addWeighted(image, 1, white, 0.5, 0.0)
-
-            ori_mask2 = mask_parse(mask)
-            pred_test = mask_parse(pred_test)
-            line = np.ones((size[1], 10, 3)) * 128
-            cat_images = np.concatenate([image, line, overlayed_image], axis=1)
-            cv2.imwrite(f"predicted_segmentations_{DATASET}/{name}.png", cat_images)
-
 
             pred_y = pred_y > 0.5
             pred_y = np.array(pred_y, dtype=np.uint8)
+
+            save_predicted_segmentation_images(pred_y, image, mask, size, name)
 
         """ Saving masks """
         ori_mask = mask_parse(mask)
@@ -196,13 +213,6 @@ def main():
 
     fps = 1/np.mean(time_taken)
     print("FPS: ", fps)
-
-    # x = recall_list
-    # y = precision_list
-    # print(x)
-    # print(y)
-    # plt.plot(x,y)
-    # plt.show()
 
 
 if __name__ == "__main__":
