@@ -22,7 +22,7 @@ test_path = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_"
 ground_truth = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_" + DATASET +  "/val_masks"
 
 ''' Set the paths for the augmented data directories '''
-AUGMENTED_DATA_BASE_PATH = 'new_data_' + DATASET + "/"
+AUGMENTED_DATA_BASE_PATH = 'augmented_data/new_data_' + DATASET + "/"
 
 train_images =  AUGMENTED_DATA_BASE_PATH + 'train/image/'
 train_masks = AUGMENTED_DATA_BASE_PATH + "train/mask/"
@@ -30,10 +30,10 @@ test_images = AUGMENTED_DATA_BASE_PATH + "test/image/"
 test_masks = AUGMENTED_DATA_BASE_PATH + "test/mask/"
 
 ''' Set the path for predicted segmentation directory '''
-predicted_segmentation_path = 'predicted_segmentation_' + DATASET + "_BS" + str(batch_size) + "E" + str(num_epochs) + "LR" + str(lr) + "/"
+predicted_segmentation_path = 'predicted_segmentations/predicted_segmentation_' + DATASET + "_BS" + str(batch_size) + "E" + str(num_epochs) + "LR" + str(lr) + "/"
 
 ''' Set the path for the predicted binary masks results '''
-results = "results_" + DATASET + "_BS" + str(batch_size) + "E" + str(num_epochs) + "LR" + str(lr) + "/"
+results = "predicted_binary_segmentations/results_" + DATASET + "_BS" + str(batch_size) + "E" + str(num_epochs) + "LR" + str(lr) + "/"
 
 
 ''' Set the path for the json file to save metrics '''
@@ -56,10 +56,4 @@ if __name__ == "__main__":
     create_dir(results)
     create_dir(json_path)
 
-    for filename in os.listdir('C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/U-NET/UNET_trying/predicted_segmentations_999_9999'):
-        
-        if 'BS32E30.png' in filename:
-            print('yes', filename)
-            os.remove('C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/U-NET/UNET_trying/predicted_segmentations_999_9999/' + filename)
-    
-    
+  

@@ -137,7 +137,7 @@ def main():
     seeding(42)
 
     """ Folders """
-    create_dir("results")
+    #create_dir("results")
 
     """ Load dataset """
     test_x = sorted(list(paths.list_images(AUGMENTED_DATA_BASE_PATH + 'test/image/')))
