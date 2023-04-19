@@ -6,17 +6,14 @@ import cv2
 from tqdm import tqdm
 import imageio
 import torch
-from sklearn.metrics import accuracy_score, f1_score, jaccard_score, precision_score, recall_score
+from sklearn.metrics import accuracy_score, f1_score, jaccard_score, precision_score, recall_score, precision_recall_curve, auc, roc_curve
 import matplotlib.pyplot as plt
-
+import json
 from model import build_unet
 from utils import create_dir, seeding
 from imutils import paths
-from sklearn.metrics import precision_recall_curve, average_precision_score, roc_auc_score, auc, roc_curve
-from data_aug import DATASET, AUGMENTED_DATA_BASE_PATH
+from config import * 
 
-
-DATASET = '999_9999'
 
 def iou(y_true, y_pred):
     intersection = (y_true * y_pred).sum()
@@ -46,6 +43,21 @@ def calculate_metrics(y_true, y_pred):
     score_iou = iou(y_true, y_pred)
 
     return [score_jaccard, score_f1, score_recall, score_precision, score_acc, score_iou]
+
+def write_metrics_to_file(metrics, len_test_x, json_path):
+    metrics_dict = {
+        "jaccard": metrics[0] / len_test_x,
+        "f1": metrics[1] / len_test_x,
+        "recall": metrics[2] / len_test_x,
+        "precision": metrics[3] / len_test_x,
+        "accuracy": metrics[4] / len_test_x,
+        "iou": metrics[5] / len_test_x
+    }
+    out_file = open(json_path, "w")
+
+    json.dump(metrics_dict, out_file, indent=4)
+
+    out_file.close()
 
 
 def evaluation(y_true, y_pred):
@@ -93,21 +105,34 @@ def mask_parse(mask):
     mask = np.concatenate([mask, mask, mask], axis=-1)  ## (512, 512, 3)
     return mask
 
-def save_predicted_segmentation_images(y_pred, image, mask, size, name):
-    y_pred = 1 - y_pred
+def save_predicted_segmentation_images(y_true, y_pred, image, size, name):
+    y_true = y_true[0].cpu().numpy()        ## (1, 512, 512)
+    y_true = np.squeeze(y_true, axis=0)     ## (512, 512)
 
-    white = np.ones((512, 512, 3), dtype = np.uint8) 
-    white[y_pred == 0] = [1,255,1]
+           
+    y_true = np.array(y_true, dtype=np.uint8)
     
-    overlayed_image = cv2.addWeighted(image, 1, white, 0.5, 0.0)
+    y_pred = 1 - y_pred
+    y_true = 1 - y_true
+
+    white1 = np.ones((512, 512, 3), dtype = np.uint8) 
+    white2 = np.ones((512, 512, 3), dtype = np.uint8) 
+    white1[y_pred == 0] = [1,255,1]
+    white2[y_true == 0] = [1,255,1]
+
+    
+    overlayed_image = cv2.addWeighted(image, 1, white1, 0.5, 0.0)
+    overlayed_image2 = cv2.addWeighted(image, 1, white2, 0.5, 0.0)
 
     line = np.ones((size[1], 10, 3)) * 128
     cat_images = np.concatenate([image, line, overlayed_image], axis=1)
-    cv2.imwrite(f"predicted_segmentations_{DATASET}/{name}.png", cat_images)
+    
+    cv2.imwrite(predicted_segmentation_path + name + ".png", cat_images)
 
 
 def main():
     print('Performing test on dataset', DATASET)
+
     """ Seeding """
     seeding(42)
 
@@ -115,25 +140,22 @@ def main():
     create_dir("results")
 
     """ Load dataset """
-    #test_x = sorted(list(paths.list_images(AUGMENTED_DATA_BASE_PATH + 'test/image/')))
-    #test_y = sorted(list(paths.list_images(AUGMENTED_DATA_BASE_PATH + 'test/mask/')))
-    test_x = sorted(list(paths.list_images('new_data_' + DATASET + "/" + 'test/image/')))
-    test_y = sorted(list(paths.list_images('new_data_' + DATASET + "/"  + 'test/mask/')))
-   
+    test_x = sorted(list(paths.list_images(AUGMENTED_DATA_BASE_PATH + 'test/image/')))
+    test_y = sorted(list(paths.list_images(AUGMENTED_DATA_BASE_PATH + 'test/mask/')))
 
-    """ Hyperparameters """
-    H = 512
-    W = 512
-    size = (W, H)
-    checkpoint_path = "files/checkpoint" + DATASET + ".pth"
+    # H = 512
+    # W = 512
+    # size = (W, H)
+    checkpoint_path = "files/checkpoint_" + DATASET + "_BS" + str(batch_size) + "E" + str(num_epochs) + "LR" + str(lr) + ".pth"
+
 
     """ Load the checkpoint """
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu') #this could be made global
     model = build_unet()
     model = model.to(device)
     model.load_state_dict(torch.load(checkpoint_path, map_location=device))
     model.eval()
+
 
     metrics_score = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     time_taken = []
@@ -167,12 +189,14 @@ def main():
         y = y.to(device)
 
         
-
+    
         with torch.no_grad():
             """ Prediction and Calculating FPS """
             start_time = time.time()
+
             pred_y = model(x)
             pred_y = torch.sigmoid(pred_y)
+
             total_time = time.time() - start_time
             time_taken.append(total_time)
 
@@ -190,8 +214,10 @@ def main():
 
             pred_y = pred_y > 0.5
             pred_y = np.array(pred_y, dtype=np.uint8)
+            #print(pred_y)
+            #print(y)
 
-            save_predicted_segmentation_images(pred_y, image, mask, size, name)
+            save_predicted_segmentation_images(y, pred_y, image, size, name)
 
         """ Saving masks """
         ori_mask = mask_parse(mask)
@@ -201,18 +227,23 @@ def main():
         cat_images = np.concatenate(
             [image, line, ori_mask, line, pred_y * 255], axis=1
         )
-        cv2.imwrite(f"results_{DATASET}/{name}.png", cat_images)
+        """ Writing the results to folder in the format: image, original mask, predicted mask"""
+        cv2.imwrite(results + name + ".png", cat_images)
 
+    """ Calculating the mean of the metrics """
     jaccard = metrics_score[0]/len(test_x)
     f1 = metrics_score[1]/len(test_x)
     recall = metrics_score[2]/len(test_x)
     precision = metrics_score[3]/len(test_x)
     acc = metrics_score[4]/len(test_x)
     iou_mean = metrics_score[5]/len(test_x)
+
+    write_metrics_to_file(metrics_score, len(test_x), json_path + DATASET + "_BS" + str(batch_size) + "E" + str(num_epochs) + "LR" + str(lr) + ".json")
+
     print(f"Jaccard: {jaccard:1.4f} - F1: {f1:1.4f} - Recall: {recall:1.4f} - Precision: {precision:1.4f} - Acc: {acc:1.4f} - IOU: {iou_mean:1.4f}")
 
     fps = 1/np.mean(time_taken)
-    print("FPS: ", fps)
+    print("FPS (frames per second): ", fps)
 
 
 if __name__ == "__main__":

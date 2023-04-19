@@ -12,7 +12,7 @@ from utils import seeding, create_dir, epoch_time
 from data import DriveDataset
 from imutils import paths
 import matplotlib.pyplot as plt
-from data_aug import DATASET, AUGMENTED_DATA_BASE_PATH
+from config import * 
 
 '''
 To prepare data for training, the image paths need to be modified in this file and in data_aug.py
@@ -65,7 +65,7 @@ if __name__ == "__main__":
     seeding(42)
 
     """ Directories """
-    create_dir("files")
+    create_dir("files") #prøv å droppe dette
 
     """ Load dataset """
     train_x = sorted(list(paths.list_images(AUGMENTED_DATA_BASE_PATH + 'train/image/')))
@@ -80,13 +80,13 @@ if __name__ == "__main__":
 
 
     """ Hyperparameters """
-    H = 512
-    W = 512
-    size = (H, W)
-    batch_size = 2
-    num_epochs = 50
-    lr = 1e-4
-    checkpoint_path = "files/checkpoint" + DATASET + ".pth"
+    # H = 512
+    # W = 512
+    # size = (H, W)
+    # batch_size = 4
+    # num_epochs = 30
+    # lr = 1e-4
+    checkpoint_path = "files/checkpoint_" + DATASET + "_BS" + str(batch_size) + "E" + str(num_epochs) + "LR" + str(lr) + ".pth"
 
     """ Dataset and loader """
     train_dataset = DriveDataset(train_x, train_y)
@@ -136,7 +136,7 @@ if __name__ == "__main__":
         plt.xlabel("Epoch #")
         plt.ylabel("Loss")
         plt.legend(loc="lower left")
-        plt.savefig(os.path.sep.join(["plots", "loss_plot" + DATASET+ " .png"]))
+        plt.savefig(os.path.sep.join(["plots", "loss_plot" + DATASET+ "BS" + str(batch_size) + "E" + str(num_epochs) + "LR" + str(lr) + " .png"]))
 
         """ Saving the model """
         if valid_loss < best_valid_loss:

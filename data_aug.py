@@ -7,27 +7,28 @@ from tqdm import tqdm
 import imageio
 from albumentations import HorizontalFlip, VerticalFlip, Rotate
 from imutils import paths
+from config import *
 
 '''
 This program loads mask labels and images from a train directoy and a test directory and annotate them
 '''
-DATASET = '999_9999'
+# DATASET = '999_9999'
 
-''' Set the data paths '''
-data_path = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_" + DATASET +  "/train_images"
-mask_path = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_" + DATASET +  "/train_masks"
-test_path = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_" + DATASET +  "/val_images"
-ground_truth = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_" + DATASET +  "/val_masks"
+# ''' Set the data paths '''
+# data_path = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_" + DATASET +  "/train_images"
+# mask_path = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_" + DATASET +  "/train_masks"
+# test_path = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_" + DATASET +  "/val_images"
+# ground_truth = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_" + DATASET +  "/val_masks"
 
 
 
-''' Set the paths for the augmented data '''
-AUGMENTED_DATA_BASE_PATH = 'new_data_' + DATASET + "/"
+# ''' Set the paths for the augmented data '''
+# AUGMENTED_DATA_BASE_PATH = 'new_data_' + DATASET + "/"
 
-train_images =  AUGMENTED_DATA_BASE_PATH + 'train/image/'
-train_masks = AUGMENTED_DATA_BASE_PATH + "train/mask/"
-test_images = AUGMENTED_DATA_BASE_PATH + "test/image/"
-test_masks = AUGMENTED_DATA_BASE_PATH + "test/mask/"
+# train_images =  AUGMENTED_DATA_BASE_PATH + 'train/image/'
+# train_masks = AUGMENTED_DATA_BASE_PATH + "train/mask/"
+# test_images = AUGMENTED_DATA_BASE_PATH + "test/image/"
+# test_masks = AUGMENTED_DATA_BASE_PATH + "test/mask/"
 
 ''' 
 Create a directory 
