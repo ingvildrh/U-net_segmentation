@@ -26,14 +26,17 @@ Loads data from paths
 Input: paths to images, masks, test images and tests ground truths
 Output: lits of file paths for all train_x, train_y, test_x, test_y
 '''
-def load_data(path_img, path_mask, path_val_img, path_val_mask):
+def load_data(path_img, path_mask, path_val_img, path_val_mask, path_test_img, path_test_mask):
     train_x = sorted(list(paths.list_images(path_img)))
     train_y = sorted(list(paths.list_images(path_mask)))
 
     val_x = sorted(list(paths.list_images(path_val_img)))
     val_y = sorted(list(paths.list_images(path_val_mask)))
 
-    return (train_x, train_y), (val_x, val_y)
+    test_x = sorted(list(paths.list_images(path_test_img)))
+    test_y = sorted(list(paths.list_images(path_test_mask)))
+
+    return (train_x, train_y), (val_x, val_y), (test_x, test_y)
 
 
 '''
@@ -89,8 +92,7 @@ def augment_data(images, masks, save_path, augment=True):
 
             cv2.imwrite(image_path, i)
             cv2.imwrite(mask_path, m)
-            print("image path", image_path)
-            print("mask path", mask_path)
+            
 
             index += 1
 
@@ -102,23 +104,25 @@ def main():
     """ Seeding """
     np.random.seed(42)
 
-    (train_x, train_y), (test_x, test_y) = load_data(data_path, mask_path, val_path, ground_truth)
+    (train_x, train_y), (val_x, val_y), (test_x, test_y) = load_data(data_path, mask_path, val_path, val_truth, test_path, test_truth)
 
     print("Train: ")
     print(len(train_x), len(train_y))
     print("Test: ")
-    print(len(test_x), len(test_y))
+    print(len(val_x), len(val_y))
 
     ''' Create directories to save the augmented data '''
     create_dir(train_images)
     create_dir(train_masks)
     create_dir(val_images)
     create_dir(val_masks)
+    create_dir(test_images)
+    create_dir(test_masks)
 
     """ Data augmentation"""
     augment_data(train_x, train_y, AUGMENTED_DATA_BASE_PATH + "/train/", augment=True)
-    print("her")
-    augment_data(test_x, test_y, AUGMENTED_DATA_BASE_PATH + "/val/", augment=False)
+    augment_data(val_x, val_y, AUGMENTED_DATA_BASE_PATH + "/val/", augment=False)
+    augment_data(test_x, test_y, AUGMENTED_DATA_BASE_PATH + "/test/", augment=False)
 
 if __name__ == "__main__":
     main()

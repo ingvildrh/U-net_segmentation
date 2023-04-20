@@ -18,7 +18,9 @@ lr = 1e-4
 data_path = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_" + DATASET +  "/train_images"
 mask_path = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_" + DATASET +  "/train_masks"
 val_path = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_" + DATASET +  "/val_images"
-ground_truth = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_" + DATASET +  "/val_masks"
+val_truth = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_" + DATASET +  "/val_masks"
+test_path = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_" + DATASET +  "/test_images"
+test_truth = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_" + DATASET +  "/test_masks"
 
 ''' Set the paths for the augmented data directories '''
 AUGMENTED_DATA_BASE_PATH = 'augmented_data/new_data_' + DATASET + "/"
@@ -27,6 +29,8 @@ train_images =  AUGMENTED_DATA_BASE_PATH + 'train/image/'
 train_masks = AUGMENTED_DATA_BASE_PATH + "train/mask/"
 val_images = AUGMENTED_DATA_BASE_PATH + "val/image/"
 val_masks = AUGMENTED_DATA_BASE_PATH + "val/mask/"
+test_images = AUGMENTED_DATA_BASE_PATH + "test/image/"
+test_masks = AUGMENTED_DATA_BASE_PATH + "test/mask/"
 
 ''' Set the path for predicted segmentation directory '''
 predicted_segmentation_path = 'predicted_segmentations/predicted_segmentation_' + DATASET + "_BS_" + str(batch_size) + "_E_" + str(num_epochs) + "_LR_" + str(lr) + "/"
