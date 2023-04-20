@@ -140,13 +140,14 @@ def main():
     #create_dir("results")
 
     """ Load dataset """
+    #DETTE MÅ ENDRES FPR TESTING -----------------> MÅ HA RIKTIGE PATHS FOR TEST DATA
     test_x = sorted(list(paths.list_images(AUGMENTED_DATA_BASE_PATH + 'test/image/')))
     test_y = sorted(list(paths.list_images(AUGMENTED_DATA_BASE_PATH + 'test/mask/')))
 
     # H = 512
     # W = 512
     # size = (W, H)
-    checkpoint_path = "files/checkpoint_" + DATASET + "_BS" + str(batch_size) + "E" + str(num_epochs) + "LR" + str(lr) + ".pth"
+    checkpoint_path = "files/checkpoint_" + DATASET + "_BS_" + str(batch_size) + "_E_" + str(num_epochs) + "_LR_" + str(lr) + ".pth"
 
 
     """ Load the checkpoint """

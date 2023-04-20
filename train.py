@@ -71,8 +71,8 @@ if __name__ == "__main__":
     train_x = sorted(list(paths.list_images(AUGMENTED_DATA_BASE_PATH + 'train/image/')))
     train_y = sorted(list(paths.list_images(AUGMENTED_DATA_BASE_PATH + "train/mask/")))
 
-    valid_x = sorted(list(paths.list_images(AUGMENTED_DATA_BASE_PATH + "test/image/")))
-    valid_y = sorted(list(paths.list_images(AUGMENTED_DATA_BASE_PATH + "test/mask/")))
+    valid_x = sorted(list(paths.list_images(AUGMENTED_DATA_BASE_PATH + "val/image/")))
+    valid_y = sorted(list(paths.list_images(AUGMENTED_DATA_BASE_PATH + "val/mask/")))
 
 
     data_str = f"Dataset Size:\nTrain: {len(train_x)} - Valid: {len(valid_x)}\n"
@@ -86,7 +86,7 @@ if __name__ == "__main__":
     # batch_size = 4
     # num_epochs = 30
     # lr = 1e-4
-    checkpoint_path = "files/checkpoint_" + DATASET + "_BS" + str(batch_size) + "E" + str(num_epochs) + "LR" + str(lr) + ".pth"
+    checkpoint_path = "files/checkpoint_" + DATASET + "_BS_" + str(batch_size) + "_E_" + str(num_epochs) + "_LR_" + str(lr) + ".pth"
 
     """ Dataset and loader """
     train_dataset = DriveDataset(train_x, train_y)
@@ -136,7 +136,7 @@ if __name__ == "__main__":
         plt.xlabel("Epoch #")
         plt.ylabel("Loss")
         plt.legend(loc="lower left")
-        plt.savefig(os.path.sep.join(["plots", "loss_plot" + DATASET+ "BS" + str(batch_size) + "E" + str(num_epochs) + "LR" + str(lr) + " .png"]))
+        plt.savefig(os.path.sep.join(["plots", "loss_plot" + DATASET+ "_BS_" + str(batch_size) + "_E_" + str(num_epochs) + "_LR_" + str(lr) + " .png"]))
 
         """ Saving the model """
         if valid_loss < best_valid_loss:

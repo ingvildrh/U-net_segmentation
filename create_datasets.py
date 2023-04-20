@@ -8,12 +8,12 @@ image_folder = 'C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/datase
 mask_folder = 'C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_000_0000/masks'
 
 ''' Set the paths for the train, val and test data directories '''
-train_image_folder = 'C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/data/train/images'
-train_mask_folder = 'C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/data/train/masks'
-val_image_folder = 'C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/data/val/images'
-val_mask_folder = 'C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/data/val/masks'
-test_image_folder = 'C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/data/test/images'
-test_mask_folder = 'C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/data/test/masks'
+train_image_folder = 'C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_111_1111/train_images'
+train_mask_folder = 'C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_111_1111/train_masks'
+val_image_folder = 'C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_111_1111/val_images'
+val_mask_folder = 'C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_111_1111/val_masks'
+test_image_folder = 'C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_111_1111/test_images'
+test_mask_folder = 'C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_111_1111/test_masks'
 
 ''' Ensure the paths exist '''
 create_dir(train_image_folder)
@@ -77,7 +77,7 @@ def create_test_set(num_train, num_val, num_test):
         shutil.copy((image_folder + "/" + image_name), (test_image_folder + "/" + image_name))
         shutil.copy((mask_folder + "/" + mask_name), (test_mask_folder + "/" + mask_name))
 
-''' Empty the folders, must be done if you want to shuffle the data over again of change the split '''
+''' Empty the folders, must be done if you want to shuffle the data over again of change the split'''
 def empty_folders():
     for folder in [train_image_folder, train_mask_folder, val_image_folder, val_mask_folder, test_image_folder, test_mask_folder]:
         for file in os.listdir(folder):
@@ -86,6 +86,7 @@ def empty_folders():
 if __name__ == '__main__':
     #empty_folders()
     num_train, num_val, num_test = find_set_sizes(0.7, 0.2, 0.1, num_images)
+    print("Train set size: {} - Validation set size: {} - Test set size: {}".format(num_train, num_val, num_test))
     check_if_mask_exists(image_files, mask_files)
     create_train_set(num_train)
     create_val_set(num_train, num_val)
