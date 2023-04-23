@@ -83,11 +83,26 @@ def empty_folders():
         for file in os.listdir(folder):
             os.remove(folder + "/" + file)
 
+def check_duplicates_in_sets(train_image_folder, val_image_folder, test_image_folder):
+    train_image_files = os.listdir(train_image_folder)
+    
+    val_image_files = os.listdir(val_image_folder)
+   
+    test_image_files = os.listdir(test_image_folder)
+    
+    for image_name in train_image_files:
+        if image_name in val_image_files or image_name in test_image_files:
+            print('Image {} is in more than one set'.format(image_name))
+            return False
+            
+
+num_train, num_val, num_test = find_set_sizes(0.7, 0.2, 0.1, num_images)
+
 if __name__ == '__main__':
-    #empty_folders()
-    num_train, num_val, num_test = find_set_sizes(0.7, 0.2, 0.1, num_images)
+    empty_folders()
     print("Train set size: {} - Validation set size: {} - Test set size: {}".format(num_train, num_val, num_test))
     check_if_mask_exists(image_files, mask_files)
     create_train_set(num_train)
     create_val_set(num_train, num_val)
     create_test_set(num_train, num_val, num_test)
+    check_duplicates_in_sets(train_image_folder, val_image_folder, test_image_folder)

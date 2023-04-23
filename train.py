@@ -30,8 +30,8 @@ def train(model, loader, optimizer, loss_fn, device):
 
     model.train()
     for x, y in loader:
-        x = x.to(device, dtype=torch.float32)
-        y = y.to(device, dtype=torch.float32)
+        x = x.to(device_ids[0], dtype=torch.float32)
+        y = y.to(device_ids[0], dtype=torch.float32)
 
         optimizer.zero_grad()
         y_pred = model(x)
@@ -49,8 +49,8 @@ def evaluate(model, loader, loss_fn, device):
     model.eval()
     with torch.no_grad():
         for x, y in loader:
-            x = x.to(device, dtype=torch.float32)
-            y = y.to(device, dtype=torch.float32)
+            x = x.to(device_ids[0], dtype=torch.float32)
+            y = y.to(device_ids[0], dtype=torch.float32)
 
             y_pred = model(x)
             loss = loss_fn(y_pred, y)
@@ -79,13 +79,6 @@ if __name__ == "__main__":
     print(data_str)
 
 
-    """ Hyperparameters """
-    # H = 512
-    # W = 512
-    # size = (H, W)
-    # batch_size = 4
-    # num_epochs = 30
-    # lr = 1e-4
     checkpoint_path = "files/checkpoint_" + DATASET + "_BS_" + str(batch_size) + "_E_" + str(num_epochs) + "_LR_" + str(lr) + ".pth"
 
     """ Dataset and loader """
@@ -109,7 +102,8 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")   ## GTX 1060 6GB
     print("Running on:", device)
     model = build_unet()
-    model = model.to(device)
+    model = nn.DataParallel(model, device_ids=device_ids)
+    model = model.to(device_ids[0])
 
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=5, verbose=True)
@@ -139,12 +133,29 @@ if __name__ == "__main__":
         plt.savefig(os.path.sep.join(["plots", "loss_plot" + DATASET+ "_BS_" + str(batch_size) + "_E_" + str(num_epochs) + "_LR_" + str(lr) + " .png"]))
 
         """ Saving the model """
-        if valid_loss < best_valid_loss:
+        # if valid_loss < best_valid_loss:
+        #     data_str = f"Valid loss improved from {best_valid_loss:2.4f} to {valid_loss:2.4f}. Saving checkpoint: {checkpoint_path}"
+        #     print(data_str)
+
+        #     best_valid_loss = valid_loss
+        #     torch.save(model.state_dict(), checkpoint_path)
+        
+        ''' Trying to implement early stopping '''
+        if valid_loss < best_valid_loss: #if the validation loss have improved
+            improvement = best_valid_loss - valid_loss #set the improvement to the difference between the best validation loss and the current validation loss
+            if improvement > 0.001: #if the improvement is greater than 0.001
+                patience = 0 #reset the patience
+            else:
+                patience += 1 #add one to the patience
+            if patience == 5: #if the patience is 5
+                print("Early stopping at epoch", epoch, "/", num_epochs) #stop the training
+                break
             data_str = f"Valid loss improved from {best_valid_loss:2.4f} to {valid_loss:2.4f}. Saving checkpoint: {checkpoint_path}"
             print(data_str)
 
             best_valid_loss = valid_loss
             torch.save(model.state_dict(), checkpoint_path)
+
 
         end_time = time.time()
         epoch_mins, epoch_secs = epoch_time(start_time, end_time)

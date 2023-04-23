@@ -12,7 +12,8 @@ import json
 from model import build_unet
 from utils import create_dir, seeding
 from imutils import paths
-from config import * 
+from confi2g import * 
+from create_datasets import num_test, num_train, num_val
 
 
 def iou(y_true, y_pred):
@@ -46,6 +47,12 @@ def calculate_metrics(y_true, y_pred):
 
 def write_metrics_to_file(metrics, len_test_x, json_path):
     metrics_dict = {
+        "batch_size": batch_size,
+        "epochs": num_epochs,
+        "learning_rate": lr,
+        "len_train_x": num_train,
+        "len_test_x": num_test,
+        "len_val_x": num_val,
         "jaccard": metrics[0] / len_test_x,
         "f1": metrics[1] / len_test_x,
         "recall": metrics[2] / len_test_x,

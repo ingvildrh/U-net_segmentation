@@ -3,6 +3,8 @@ import os
 '''
 Set directories for training the network 
 '''
+device_ids = [0, 1, 2, 3]
+
 
 DATASET = '111_1111'
 
@@ -10,8 +12,8 @@ DATASET = '111_1111'
 H = 512
 W = 512
 size = (H, W)
-batch_size = 1
-num_epochs = 2
+batch_size = 16
+num_epochs = 50
 lr = 1e-4
 
 ''' Set the data paths '''

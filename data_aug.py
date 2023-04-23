@@ -7,7 +7,7 @@ from tqdm import tqdm
 import imageio
 from albumentations import HorizontalFlip, VerticalFlip, Rotate
 from imutils import paths
-from config import *
+from confi2g import *
 
 '''
 This program loads mask labels and images from a train directoy and a test directory and annotate them
@@ -96,10 +96,17 @@ def augment_data(images, masks, save_path, augment=True):
 
             index += 1
 
-   
+def empty_augmented_data():
+    if os.path.exists(AUGMENTED_DATA_BASE_PATH + "/train/"):
+        shutil.rmtree(AUGMENTED_DATA_BASE_PATH + "/train/")
+    if os.path.exists(AUGMENTED_DATA_BASE_PATH + "/val/"):
+        shutil.rmtree(AUGMENTED_DATA_BASE_PATH + "/val/")
+    if os.path.exists(AUGMENTED_DATA_BASE_PATH + "/test/"):
+        shutil.rmtree(AUGMENTED_DATA_BASE_PATH + "/test/")
    
         
 def main():
+    empty_augmented_data()
 
     """ Seeding """
     np.random.seed(42)
@@ -108,8 +115,10 @@ def main():
 
     print("Train: ")
     print(len(train_x), len(train_y))
-    print("Test: ")
+    print("Validation: ")
     print(len(val_x), len(val_y))
+    print("Test: ")
+    print(len(test_x), len(test_y))
 
     ''' Create directories to save the augmented data '''
     create_dir(train_images)
