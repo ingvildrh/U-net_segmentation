@@ -12,7 +12,7 @@ import json
 from model import build_unet
 from utils import create_dir, seeding
 from imutils import paths
-from confi2g import * 
+from config import * 
 from create_datasets import num_test, num_train, num_val
 
 
@@ -22,6 +22,47 @@ def iou(y_true, y_pred):
     x = (intersection + 1e-15) / (union + 1e-15)
     return x
 
+def generate_confusion_matrix(y_true, y_pred):
+    """ Ground truth """
+    y_true = y_true.cpu().numpy()
+    y_true = y_true > 0.5
+    y_true = y_true.astype(np.uint8)
+    y_true = y_true.reshape(-1)
+
+    """ Prediction """
+    y_pred = y_pred.cpu().numpy()
+    y_pred = y_pred > 0.5
+    y_pred = y_pred.astype(np.uint8)
+    y_pred = y_pred.reshape(-1)
+
+    confusion_matrix = np.zeros((2, 2))
+
+    for i in range(len(y_true)):
+        confusion_matrix[y_true[i]][y_pred[i]] += 1
+
+    return confusion_matrix
+
+def plot_confusion_matrix(cf):
+    # Plot confusion matrix
+    plt.imshow(cf, interpolation='nearest', cmap=plt.cm.Reds)
+    plt.title("Confusion matrix")
+    plt.colorbar()
+    tick_marks = np.arange(2)
+    plt.xticks(tick_marks, ['Negative', 'Positive'], rotation=45)
+    plt.yticks(tick_marks, ['Negative', 'Positive'])
+    plt.tight_layout()
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+    # Add numbers to the plot
+    width, height = cf.shape
+    for x in range(width):
+        for y in range(height):
+            plt.annotate(str(cf[x][y]), xy=(y, x), 
+                        horizontalalignment='center',
+                        verticalalignment='center')
+
+    # Show plot
+    plt.show()
 
 def calculate_metrics(y_true, y_pred):
     """ Ground truth """
@@ -211,7 +252,9 @@ def main():
             """ Calculate metrics """
             score = calculate_metrics(y, pred_y)
             metrics_score = list(map(add, metrics_score, score))
-            evaluation(y, pred_y)
+            #cf = generate_confusion_matrix(y, pred_y)
+            #plot_confusion_matrix(cf)
+            #evaluation(y, pred_y)
             recall, precision = calculate_precicion_recall(y, pred_y)
             
             recall_list.append(recall)

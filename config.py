@@ -12,11 +12,11 @@ DATASET = '111_1111'
 H = 512
 W = 512
 size = (H, W)
-batch_size = 16
-num_epochs = 50
+batch_size = 4
+num_epochs = 1
 lr = 1e-4
 
-''' Set the data paths '''
+''' Set the data paths, these must be changes if you want to run the code on your own computer '''
 data_path = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_" + DATASET +  "/train_images"
 mask_path = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_" + DATASET +  "/train_masks"
 val_path = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_" + DATASET +  "/val_images"
