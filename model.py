@@ -1,6 +1,9 @@
 import torch
 import torch.nn as nn
 
+'''
+This model is fitted for training images with the size 512x512
+'''
 class conv_block(nn.Module):
     def __init__(self, in_c, out_c):
         super().__init__()

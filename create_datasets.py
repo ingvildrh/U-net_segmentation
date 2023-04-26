@@ -2,18 +2,19 @@ import os
 import random
 import shutil
 from config import *
+import cv2
 
 ''' Set image and mask paths '''
-image_folder = 'C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_000_0000/images'
-mask_folder = 'C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_000_0000/masks'
+image_folder = 'C:/Users/ingvilrh/master_data/dataset_000_0000/images'
+mask_folder = 'C:/Users/ingvilrh/master_data/dataset_000_0000/masks'
 
 ''' Set the paths for the train, val and test data directories '''
-train_image_folder = 'C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_111_1111/train_images'
-train_mask_folder = 'C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_111_1111/train_masks'
-val_image_folder = 'C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_111_1111/val_images'
-val_mask_folder = 'C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_111_1111/val_masks'
-test_image_folder = 'C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_111_1111/test_images'
-test_mask_folder = 'C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_111_1111/test_masks'
+train_image_folder = 'C:/Users/ingvilrh/master_data/dataset_111_1111/train_images'
+train_mask_folder = 'C:/Users/ingvilrh/master_data/dataset_111_1111/train_masks'
+val_image_folder = 'C:/Users/ingvilrh/master_data/dataset_111_1111/val_images'
+val_mask_folder = 'C:/Users/ingvilrh/master_data/dataset_111_1111/val_masks'
+test_image_folder = 'C:/Users/ingvilrh/master_data/dataset_111_1111/test_images'
+test_mask_folder = 'C:/Users/ingvilrh/master_data/dataset_111_1111/test_masks'
 
 ''' Ensure the paths exist '''
 create_dir(train_image_folder)
@@ -99,6 +100,7 @@ def check_duplicates_in_sets(train_image_folder, val_image_folder, test_image_fo
 num_train, num_val, num_test = find_set_sizes(0.7, 0.2, 0.1, num_images)
 
 if __name__ == '__main__':
+    print("Number of images available for datasets: {}".format(num_images))
     empty_folders()
     print("Train set size: {} - Validation set size: {} - Test set size: {}".format(num_train, num_val, num_test))
     check_if_mask_exists(image_files, mask_files)

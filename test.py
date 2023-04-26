@@ -15,6 +15,11 @@ from imutils import paths
 from config import * 
 from create_datasets import num_test, num_train, num_val
 
+if MODEL_NAME == 'model2':
+    from model2 import build_unet
+else:
+    from model import build_unet
+
 
 def iou(y_true, y_pred):
     intersection = (y_true * y_pred).sum()

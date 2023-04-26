@@ -6,13 +6,18 @@ import torch
 from torch.utils.data import DataLoader
 import torch.nn as nn
 
-from model import build_unet
+
 from loss import DiceLoss, DiceBCELoss
 from utils import seeding, create_dir, epoch_time
 from data import DriveDataset
 from imutils import paths
 import matplotlib.pyplot as plt
 from config import * 
+
+if MODEL_NAME == 'model2':
+    from model2 import build_unet
+else:
+    from model import build_unet
 
 # print(torch.__version__)
 # print(torch.cuda.is_available())
@@ -102,7 +107,7 @@ if __name__ == "__main__":
         num_workers=2
     )
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  
+    device = torch.device("cuda:2" if torch.cuda.is_available() else "cpu")  
     print("Running on:", device)
     model = build_unet()
     model = model.to(device)
@@ -116,6 +121,7 @@ if __name__ == "__main__":
     """ Training the model """
     best_valid_loss = float("inf")
     print("Training the model for the dataset", DATASET)
+    print("Batch size:", batch_size, "Epochs:", num_epochs, "Learning rate:", lr, "H:", H, "W:", W)
     for epoch in range(num_epochs):
         start_time = time.time()
 

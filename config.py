@@ -16,16 +16,20 @@ batch_size = 4
 num_epochs = 1
 lr = 1e-4
 
+''' Set the model to train/test'''
+MODEL_NAME = 'model'
+
 ''' Set the data paths, these must be changes if you want to run the code on your own computer '''
-data_path = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_" + DATASET +  "/train_images"
-mask_path = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_" + DATASET +  "/train_masks"
-val_path = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_" + DATASET +  "/val_images"
-val_truth = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_" + DATASET +  "/val_masks"
-test_path = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_" + DATASET +  "/test_images"
-test_truth = "C:/Users/ingvilrh/OneDrive - NTNU/MASTER_CODE23/DATA_SETS/dataset_" + DATASET +  "/test_masks"
+data_path ='C:/Users/ingvilrh/master_data/dataset_111_1111/train_images'
+mask_path = 'C:/Users/ingvilrh/master_data/dataset_111_1111/train_masks'
+val_path = 'C:/Users/ingvilrh/master_data/dataset_111_1111/val_images'
+val_truth = 'C:/Users/ingvilrh/master_data/dataset_111_1111/val_masks'
+test_path = 'C:/Users/ingvilrh/master_data/dataset_111_1111/test_images'
+test_truth = 'C:/Users/ingvilrh/master_data/dataset_111_1111/test_masks'
+
 
 ''' Set the paths for the augmented data directories '''
-AUGMENTED_DATA_BASE_PATH = 'augmented_data/new_data_' + DATASET + "/"
+AUGMENTED_DATA_BASE_PATH = 'augmented_data/new_data_' + DATASET + "_"+  str(H) +  "/"
 
 train_images =  AUGMENTED_DATA_BASE_PATH + 'train/image/'
 train_masks = AUGMENTED_DATA_BASE_PATH + "train/mask/"

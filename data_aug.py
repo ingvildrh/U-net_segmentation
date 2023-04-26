@@ -7,10 +7,22 @@ from tqdm import tqdm
 import imageio
 from albumentations import HorizontalFlip, VerticalFlip, Rotate
 from imutils import paths
-from confi2g import *
+from config import *
 
 '''
-This program loads mask labels and images from a train directoy and a test directory and annotate them
+This program takes paths to 
+train images: 
+ground truth masks for training:
+
+validation images:
+ground truth masks for validation:
+
+test images:
+ground truth masks for test:
+
+and augment the training images and masks with 3 methods: horizontal flip, vertical flip and rotation.
+
+The images is saved to a new folder with the name of the dataset and the size of the images that was created. 
 '''
 
 ''' 
@@ -45,7 +57,7 @@ Test data is not annotated.
 Input: images to annotate, corresponding masks to annotate, path for saving of annotations, augment=True
 '''
 def augment_data(images, masks, save_path, augment=True):
-    size = (512, 512)
+    size = (H, W)
 
     for idx, (x,y) in tqdm(enumerate(zip(images, masks)), total = len(images)):
         """ Extracting the name """
@@ -130,8 +142,8 @@ def main():
 
     """ Data augmentation"""
     augment_data(train_x, train_y, AUGMENTED_DATA_BASE_PATH + "/train/", augment=True)
-    augment_data(val_x, val_y, AUGMENTED_DATA_BASE_PATH + "/val/", augment=False)
-    augment_data(test_x, test_y, AUGMENTED_DATA_BASE_PATH + "/test/", augment=False)
+    augment_data(val_x, val_y, AUGMENTED_DATA_BASE_PATH  + "/val/", augment=False)
+    augment_data(test_x, test_y, AUGMENTED_DATA_BASE_PATH  + "/test/", augment=False)
 
 if __name__ == "__main__":
     main()
