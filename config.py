@@ -9,15 +9,20 @@ device_ids = [0, 1, 2, 3]
 DATASET = '111_1111'
 
 ''' Set the hyperparameters for the model you want to train or test '''
-H = 512
-W = 512
+H = 255
+W = 255
 size = (H, W)
-batch_size = 4
-num_epochs = 1
+batch_size = 16
+num_epochs = 50
 lr = 1e-4
 
-''' Set the model to train/test'''
-MODEL_NAME = 'model'
+'''
+Set the model to train/test
+
+model: the model for training images with the size 512x512
+model2: the model for training images with the size 255x255
+'''
+MODEL_NAME = 'model2'
 
 ''' Set the data paths, these must be changes if you want to run the code on your own computer '''
 data_path ='C:/Users/ingvilrh/master_data/dataset_111_1111/train_images'

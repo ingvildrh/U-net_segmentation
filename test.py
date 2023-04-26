@@ -104,7 +104,10 @@ def write_metrics_to_file(metrics, len_test_x, json_path):
         "recall": metrics[2] / len_test_x,
         "precision": metrics[3] / len_test_x,
         "accuracy": metrics[4] / len_test_x,
-        "iou": metrics[5] / len_test_x
+        "iou": metrics[5] / len_test_x,
+        "H": H,
+        "W": W,
+        "model_name": MODEL_NAME,
     }
     out_file = open(json_path, "w")
 
@@ -168,8 +171,8 @@ def save_predicted_segmentation_images(y_true, y_pred, image, size, name):
     y_pred = 1 - y_pred
     y_true = 1 - y_true
 
-    white1 = np.ones((512, 512, 3), dtype = np.uint8) 
-    white2 = np.ones((512, 512, 3), dtype = np.uint8) 
+    white1 = np.ones((H, W, 3), dtype = np.uint8) 
+    white2 = np.ones((H, W, 3), dtype = np.uint8) 
     white1[y_pred == 0] = [1,255,1]
     white2[y_true == 0] = [1,255,1]
 
