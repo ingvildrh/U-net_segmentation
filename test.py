@@ -6,13 +6,14 @@ import cv2
 from tqdm import tqdm
 import imageio
 import torch
-from sklearn.metrics import accuracy_score, f1_score, jaccard_score, precision_score, recall_score, precision_recall_curve, auc, roc_curve
+from sklearn.metrics import accuracy_score, f1_score, jaccard_score, precision_score, recall_score, precision_recall_curve, auc, roc_curve, balanced_accuracy_score
 import matplotlib.pyplot as plt
 import json
 from model import build_unet
 from utils import create_dir, seeding
 from imutils import paths
 from config import * 
+import torch.nn as nn
 from create_datasets import num_test, num_train, num_val
 
 if MODEL_NAME == 'model2':
@@ -88,8 +89,9 @@ def calculate_metrics(y_true, y_pred):
     score_precision = precision_score(y_true, y_pred)
     score_acc = accuracy_score(y_true, y_pred)
     score_iou = iou(y_true, y_pred)
+    score_balanced_acc = balanced_accuracy_score(y_true, y_pred)
 
-    return [score_jaccard, score_f1, score_recall, score_precision, score_acc, score_iou]
+    return [score_jaccard, score_f1, score_recall, score_precision, score_acc, score_iou, score_balanced_acc]
 
 def write_metrics_to_file(metrics, len_test_x, json_path):
     metrics_dict = {
@@ -105,6 +107,7 @@ def write_metrics_to_file(metrics, len_test_x, json_path):
         "precision": metrics[3] / len_test_x,
         "accuracy": metrics[4] / len_test_x,
         "iou": metrics[5] / len_test_x,
+        "balanced_accuracy": metrics[6] / len_test_x,
         "H": H,
         "W": W,
         "model_name": MODEL_NAME,
@@ -204,17 +207,19 @@ def main():
     # W = 512
     # size = (W, H)
     checkpoint_path = "files/checkpoint_" + DATASET + "_BS_" + str(batch_size) + "_E_" + str(num_epochs) + "_LR_" + str(lr) + ".pth"
-
+    
+    
 
     """ Load the checkpoint """
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu') #this could be made global
     model = build_unet()
     model = model.to(device)
+    model = torch.nn.DataParallel(model)
     model.load_state_dict(torch.load(checkpoint_path, map_location=device))
     model.eval()
 
 
-    metrics_score = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    metrics_score = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     time_taken = []
     recall_list = []
     precision_list = []
@@ -296,10 +301,11 @@ def main():
     precision = metrics_score[3]/len(test_x)
     acc = metrics_score[4]/len(test_x)
     iou_mean = metrics_score[5]/len(test_x)
+    balanced_accuracy_score = metrics_score[6]/len(test_x)
 
     write_metrics_to_file(metrics_score, len(test_x), json_path + DATASET + "_BS" + str(batch_size) + "E" + str(num_epochs) + "LR" + str(lr) + ".json")
 
-    print(f"Jaccard: {jaccard:1.4f} - F1: {f1:1.4f} - Recall: {recall:1.4f} - Precision: {precision:1.4f} - Acc: {acc:1.4f} - IOU: {iou_mean:1.4f}")
+    print(f"Jaccard: {jaccard:1.4f} - F1: {f1:1.4f} - Recall: {recall:1.4f} - Precision: {precision:1.4f} - Acc: {acc:1.4f} - Balanced Acc: {balanced_accuracy_score:1.4f}")
 
     fps = 1/np.mean(time_taken)
     print("FPS (frames per second): ", fps)

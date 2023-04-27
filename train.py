@@ -27,6 +27,11 @@ To prepare data for training, the image paths need to be modified in this file a
 To augmentate the images correctly, please run data_aug.py first 
 '''
 
+
+os.environ["PYTORCH_CUDA_ALLOC_CONF"]="max_split_size_mb:256"
+os.environ["PYTORCH_CUDA_ALLOC_CONF"]= "backend:native"
+os.environ["PYTORCH_CUDA_ALLOC_CONF"]= "garbage_collection_threshold:0.5"
+
 loss_dict = {"train_loss": [], "validation_loss": []}
 
 def train(model, loader, optimizer, loss_fn, device):
@@ -107,9 +112,11 @@ if __name__ == "__main__":
         num_workers=2
     )
 
-    device = torch.device("cuda:2" if torch.cuda.is_available() else "cpu")  
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")  
     print("Running on:", device)
     model = build_unet()
+    model = nn.DataParallel(model)
+
     model = model.to(device)
     #model = nn.DataParallel(model, device_ids=device_ids)
     #model = model.to(device_ids[0])
