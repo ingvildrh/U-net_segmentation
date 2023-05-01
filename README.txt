@@ -1,6 +1,8 @@
 This is from 
 https://www.youtube.com/watch?v=T0BiFBaMLDQ&ab_channel=IdiotDeveloper
 
+The arcitechture can be found and explpained here:
+https://idiotdeveloper.com/unet-implementation-in-pytorch/
 
 
 
