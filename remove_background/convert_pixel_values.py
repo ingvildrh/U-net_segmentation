@@ -28,7 +28,9 @@ def binarize_image(image_path, threshold):
     # Binarize image
     bin_img = img.point(lambda x: 0 if x < threshold else 255, '1')
 
-   
+    # Create a new directory if it doesn't exist
+    if not os.path.exists('converted_pictures'):
+        os.makedirs('converted_pictures')
 
     bin_img.save(image_path)
 
@@ -48,5 +50,7 @@ def all_images_binary(mask_folder):
             return False
     return True
 
+binarize_folder("augmented_data/new_data_111_1111_512/val/mask", 128)
 
+print(all_images_binary("augmented_data/new_data_111_1111_512/test/mask"))
 
