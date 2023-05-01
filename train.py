@@ -14,19 +14,17 @@ from imutils import paths
 import matplotlib.pyplot as plt
 from config import * 
 
+torch.cuda.empty_cache()
+
 if MODEL_NAME == 'model2':
     from model2 import build_unet
 else:
     from model import build_unet
 
-# print(torch.__version__)
-# print(torch.cuda.is_available())
-# print(torch.cuda.device_count())
 '''
 To prepare data for training, the image paths need to be modified in this file and in data_aug.py
 To augmentate the images correctly, please run data_aug.py first 
 '''
-
 
 os.environ["PYTORCH_CUDA_ALLOC_CONF"]="max_split_size_mb:256"
 os.environ["PYTORCH_CUDA_ALLOC_CONF"]= "backend:native"
@@ -92,7 +90,7 @@ if __name__ == "__main__":
     print(data_str)
 
    
-    checkpoint_path = "files/checkpoint_" + DATASET + "_BS_" + str(batch_size) + "_E_" + str(num_epochs) + "_LR_" + str(lr) + ".pth"
+    checkpoint_path = "files/checkpoint_" + DATASET + "_BS_" + str(batch_size) + "_E_" + str(num_epochs) + "_LR_" + str(lr) + "_" + str(H) +  ".pth"
 
     """ Dataset and loader """
     train_dataset = DriveDataset(train_x, train_y)
@@ -116,13 +114,12 @@ if __name__ == "__main__":
     print("Running on:", device)
     model = build_unet()
     model = nn.DataParallel(model)
-
     model = model.to(device)
     #model = nn.DataParallel(model, device_ids=device_ids)
     #model = model.to(device_ids[0])
 
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=5, verbose=True)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=2, verbose=True)
     loss_fn = DiceBCELoss()
 
     """ Training the model """
@@ -153,6 +150,8 @@ if __name__ == "__main__":
         if valid_loss < best_valid_loss:
             data_str = f"Valid loss improved from {best_valid_loss:2.4f} to {valid_loss:2.4f}. Saving checkpoint: {checkpoint_path}"
             print(data_str)
+
+            scheduler.step(valid_loss)
 
             best_valid_loss = valid_loss
             torch.save(model.state_dict(), checkpoint_path)

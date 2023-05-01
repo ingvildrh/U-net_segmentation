@@ -166,9 +166,7 @@ def mask_parse(mask):
 
 def save_predicted_segmentation_images(y_true, y_pred, image, size, name):
     y_true = y_true[0].cpu().numpy()        ## (1, 512, 512)
-    y_true = np.squeeze(y_true, axis=0)     ## (512, 512)
-
-           
+    y_true = np.squeeze(y_true, axis=0)     ## (512, 512)     
     y_true = np.array(y_true, dtype=np.uint8)
     
     y_pred = 1 - y_pred
@@ -180,11 +178,11 @@ def save_predicted_segmentation_images(y_true, y_pred, image, size, name):
     white2[y_true == 0] = [1,255,1]
 
     
-    overlayed_image = cv2.addWeighted(image, 1, white1, 0.5, 0.0)
-    overlayed_image2 = cv2.addWeighted(image, 1, white2, 0.5, 0.0)
+    overlayed_image = cv2.addWeighted(image, 1, white1, 0.5, 0.0) #predicted one
+    overlayed_image2 = cv2.addWeighted(image, 1, white2, 0.5, 0.0) #true one
 
     line = np.ones((size[1], 10, 3)) * 128
-    cat_images = np.concatenate([image, line, overlayed_image], axis=1)
+    cat_images = np.concatenate([image, line, overlayed_image2, line, overlayed_image], axis=1)
     
     cv2.imwrite(predicted_segmentation_path + name + ".png", cat_images)
 
@@ -206,7 +204,7 @@ def main():
     # H = 512
     # W = 512
     # size = (W, H)
-    checkpoint_path = "files/checkpoint_" + DATASET + "_BS_" + str(batch_size) + "_E_" + str(num_epochs) + "_LR_" + str(lr) + ".pth"
+    checkpoint_path = "files/checkpoint_" + DATASET + "_BS_" + str(batch_size) + "_E_" + str(num_epochs) + "_LR_" + str(lr) + "_" + str(H) +  ".pth"
     
     
 
@@ -278,8 +276,17 @@ def main():
 
             pred_y = pred_y > 0.5
             pred_y = np.array(pred_y, dtype=np.uint8)
-            #print(pred_y)
-            #print(y)
+            
+            print("Pred_y, unique values:")
+            print(np.unique(pred_y))
+            print(pred_y.min())
+            print("Y, unique values:")
+            print(y.unique())
+            
+            print("Pred_y, unique values:")
+            #print(set(tuple(pred_y[i]) for i in range(len(pred_y))) - set(tuple(y[i]) for i in range(len(y))))
+
+            
 
             save_predicted_segmentation_images(y, pred_y, image, size, name)
 
