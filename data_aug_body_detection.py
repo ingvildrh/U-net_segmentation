@@ -7,6 +7,7 @@ from tqdm import tqdm
 import imageio
 from albumentations import HorizontalFlip, VerticalFlip, Rotate
 from imutils import paths
+from create_datasets_body_detection import *
 from config_body_detection import *
 '''
 This program takes paths to 
@@ -23,6 +24,7 @@ and augment the training images and masks with 3 methods: horizontal flip, verti
 
 The images is saved to a new folder with the name of the dataset and the size of the images that was created. 
 '''
+BODY_DETECTION_DATASET = 'body_detection_dataset'
 
 ''' 
 Create a directory 
@@ -109,22 +111,13 @@ def augment_data(images, masks, save_path, augment=True):
             index += 1
 
 def empty_augmented_data():
-    if os.path.exists(AUGMENTED_DATA_BASE_PATH + "/train/"):
-        shutil.rmtree(AUGMENTED_DATA_BASE_PATH + "/train/")
-    if os.path.exists(AUGMENTED_DATA_BASE_PATH + "/val/"):
-        shutil.rmtree(AUGMENTED_DATA_BASE_PATH + "/val/")
-    if os.path.exists(AUGMENTED_DATA_BASE_PATH + "/test/"):
-        shutil.rmtree(AUGMENTED_DATA_BASE_PATH + "/test/")
+    if os.path.exists(BODY_DETECTION_DATASET + "/train/"):
+        shutil.rmtree(BODY_DETECTION_DATASET + "/train/")
+    if os.path.exists(BODY_DETECTION_DATASET + "/val/"):
+        shutil.rmtree(BODY_DETECTION_DATASET + "/val/")
+    if os.path.exists(BODY_DETECTION_DATASET + "/test/"):
+        shutil.rmtree(BODY_DETECTION_DATASET + "/test/")
    
-  
-''' Set the paths for the train, val and test data directories '''
-train_image_folder = 'C:/Users/ingvilrh/master_data/body_det_dataset/train_images'
-train_mask_folder = 'C:/Users/ingvilrh/master_data/body_det_dataset/train_masks'
-val_image_folder = 'C:/Users/ingvilrh/master_data/body_det_dataset/val_images'
-val_mask_folder = 'C:/Users/ingvilrh/master_data/body_det_dataset/val_masks'
-test_image_folder = 'C:/Users/ingvilrh/master_data/body_det_dataset/test_images'
-test_mask_folder = 'C:/Users/ingvilrh/master_data/body_det_dataset/test_masks'
-
 def main():
     #empty_augmented_data()
 
@@ -148,17 +141,17 @@ def main():
     # create_dir(test_images)
     # create_dir(test_masks)
 
-    create_dir(AUGMENTED_DATA_BASE_PATH + "/train/image")
-    create_dir(AUGMENTED_DATA_BASE_PATH + "/train/mask")
-    create_dir(AUGMENTED_DATA_BASE_PATH + "/test/image")
-    create_dir(AUGMENTED_DATA_BASE_PATH + "/test/mask")
-    create_dir(AUGMENTED_DATA_BASE_PATH + "/val/image")
-    create_dir(AUGMENTED_DATA_BASE_PATH + "/val/mask")
+    create_dir(BODY_DETECTION_DATASET + "/train/image")
+    create_dir(BODY_DETECTION_DATASET + "/train/mask")
+    create_dir(BODY_DETECTION_DATASET + "/test/image")
+    create_dir(BODY_DETECTION_DATASET + "/test/mask")
+    create_dir(BODY_DETECTION_DATASET + "/val/image")
+    create_dir(BODY_DETECTION_DATASET + "/val/mask")
 
     """ Data augmentation"""
-    augment_data(train_x, train_y, AUGMENTED_DATA_BASE_PATH + "/train/", augment=True)
-    augment_data(val_x, val_y, AUGMENTED_DATA_BASE_PATH  + "/val/", augment=False)
-    augment_data(test_x, test_y, AUGMENTED_DATA_BASE_PATH  + "/test/", augment=False)
+    augment_data(train_x, train_y, BODY_DETECTION_DATASET + "/train/", augment=True)
+    augment_data(val_x, val_y, BODY_DETECTION_DATASET  + "/val/", augment=False)
+    augment_data(test_x, test_y, BODY_DETECTION_DATASET  + "/test/", augment=False)
 
 if __name__ == "__main__":
     main()

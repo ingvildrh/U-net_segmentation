@@ -21,6 +21,7 @@ if MODEL_NAME == 'model2':
 else:
     from model import build_unet
 
+ulcer_pixels_dict = {}
 
 def iou(y_true, y_pred):
     intersection = (y_true * y_pred).sum()
@@ -164,6 +165,20 @@ def mask_parse(mask):
     mask = np.concatenate([mask, mask, mask], axis=-1)  ## (512, 512, 3)
     return mask
 
+def count_ulcer_pixels(mask_image):
+    return np.count_nonzero(mask_image), np.size(mask_image)
+
+def write_body_pixels_to_json(name, count, total_pixels):
+    ulcer_pixels_dict[name] = [count, total_pixels]
+    out_file = open("ulcer_pixels.json", "w")
+    json.dump(ulcer_pixels_dict, out_file, indent=4)
+    out_file.close()
+
+def create_ulcer_model_output(mask_image, name):
+    pxls, total = count_ulcer_pixels(mask_image)
+    print(pxls, total)
+    write_body_pixels_to_json(name, pxls, total)
+
 def save_predicted_segmentation_images(y_true, y_pred, image, size, name):
     y_true = y_true[0].cpu().numpy()        ## (1, 512, 512)
     y_true = np.squeeze(y_true, axis=0)     ## (512, 512)     
@@ -289,11 +304,15 @@ def main():
             
 
             save_predicted_segmentation_images(y, pred_y, image, size, name)
+           
 
         """ Saving masks """
         ori_mask = mask_parse(mask)
         pred_y = mask_parse(pred_y)
         line = np.ones((size[1], 10, 3)) * 128
+
+        print(np.size(pred_y))
+        create_ulcer_model_output(pred_y*255, name)
 
         cat_images = np.concatenate(
             [image, line, ori_mask, line, pred_y * 255], axis=1

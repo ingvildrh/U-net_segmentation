@@ -5,16 +5,16 @@ from config_body_detection import *
 import cv2
 
 ''' Set image and mask paths '''
-image_folder = 'C:/Users/ingvilrh/master_data/Red Sea Bream'
-mask_folder = 'C:/Users/ingvilrh/master_data/Red Sea Bream GT'
+image_folder = 'C:/Users/ingvilrh/master_data/fish_bodies'
+mask_folder = 'remove_background/body_masks/'
 
 ''' Set the paths for the train, val and test data directories '''
-train_image_folder = 'C:/Users/ingvilrh/master_data/body_det_dataset/train_images'
-train_mask_folder = 'C:/Users/ingvilrh/master_data/body_det_dataset/train_masks'
-val_image_folder = 'C:/Users/ingvilrh/master_data/body_det_dataset/val_images'
-val_mask_folder = 'C:/Users/ingvilrh/master_data/body_det_dataset/val_masks'
-test_image_folder = 'C:/Users/ingvilrh/master_data/body_det_dataset/test_images'
-test_mask_folder = 'C:/Users/ingvilrh/master_data/body_det_dataset/test_masks'
+train_image_folder = 'remove_background/train_images'
+train_mask_folder = 'remove_background/train_masks'
+val_image_folder = 'remove_background/val_images'
+val_mask_folder = 'remove_background/val_masks'
+test_image_folder = 'remove_background/test_images'
+test_mask_folder = 'remove_background/test_masks'
 
 ''' Ensure the paths exist '''
 create_dir(train_image_folder)
