@@ -9,7 +9,6 @@ from albumentations import HorizontalFlip, VerticalFlip, Rotate
 from imutils import paths
 from create_datasets_body_detection import *
 from config_body_detection import *
-
 '''
 This program takes paths to 
 train images: 
@@ -25,7 +24,6 @@ and augment the training images and masks with 3 methods: horizontal flip, verti
 
 The images is saved to a new folder with the name of the dataset and the size of the images that was created. 
 '''
-
 BODY_DETECTION_DATASET = 'body_detection_dataset'
 
 ''' 
