@@ -1,0 +1,18 @@
+{
+    "batch_size": 16,
+    "epochs": 200,
+    "learning_rate": 0.0001,
+    "len_train_x": 355,
+    "len_test_x": 52,
+    "len_val_x": 101,
+    "jaccard": 0.7276873930235914,
+    "f1": 0.8019453396598311,
+    "recall": 0.8057141448373536,
+    "precision": 0.8121268301386263,
+    "accuracy": 0.9988923439612756,
+    "iou": 0.7276873930235914,
+    "balanced_accuracy": 0.9217858675724179,
+    "H": 512,
+    "W": 512,
+    "model_name": "model"
+}
