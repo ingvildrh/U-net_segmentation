@@ -15,28 +15,37 @@ from imutils import paths
 from config import * 
 import torch.nn as nn
 from create_datasets import num_test, num_train, num_val
+from train import EARLY_STOPPING
 
+''' Set the model to be used for testing '''
 if MODEL_NAME == 'model2':
     from model2 import build_unet
+# elif MODEL_NAME == 'model3':
+#     from model3 import build_unet
+# elif MODEL_NAME == 'model4':
+#     from model4 import build_unet
 else:
     from model import build_unet
 
+''' Initialize a dictionary for counting of pixels '''
 ulcer_pixels_dict = {}
 
-def iou(y_true, y_pred):
-    intersection = (y_true * y_pred).sum()
-    union = y_true.sum() + y_pred.sum() - intersection
-    x = (intersection + 1e-15) / (union + 1e-15)
-    return x
-
+'''
+Generate confucion matrix for each image from the the test set
+INPUT:
+    y_true : ground truth
+    y_pred : prediction
+OUTPUT:
+    confusion_matrix: 2x2 matrix
+'''
 def generate_confusion_matrix(y_true, y_pred):
-    """ Ground truth """
+    ''' Ground truth '''
     y_true = y_true.cpu().numpy()
     y_true = y_true > 0.5
     y_true = y_true.astype(np.uint8)
     y_true = y_true.reshape(-1)
 
-    """ Prediction """
+    ''' Prediction '''
     y_pred = y_pred.cpu().numpy()
     y_pred = y_pred > 0.5
     y_pred = y_pred.astype(np.uint8)
@@ -49,6 +58,11 @@ def generate_confusion_matrix(y_true, y_pred):
 
     return confusion_matrix
 
+'''
+Plot the confusion matrix
+INPUT:
+    cf : confusion matrix
+'''
 def plot_confusion_matrix(cf):
     # Plot confusion matrix
     plt.imshow(cf, interpolation='nearest', cmap=plt.cm.Reds)
@@ -71,14 +85,27 @@ def plot_confusion_matrix(cf):
     # Show plot
     plt.show()
 
+'''
+Calculate the metrics for the test set
+INPUT:
+    y_true : ground truth
+    y_pred : prediction
+OUTPUT:
+    score_jaccard : jaccard score
+    score_f1 : f1 score
+    score_recall : recall score
+    score_precision : precision score
+    score_acc : accuracy score
+    score_balanced_acc : balanced accuracy score
+'''
 def calculate_metrics(y_true, y_pred):
-    """ Ground truth """
+    ''' Ground truth '''
     y_true = y_true.cpu().numpy()
     y_true = y_true > 0.5
     y_true = y_true.astype(np.uint8)
     y_true = y_true.reshape(-1)
 
-    """ Prediction """
+    ''' Prediction '''
     y_pred = y_pred.cpu().numpy()
     y_pred = y_pred > 0.5
     y_pred = y_pred.astype(np.uint8)
@@ -89,11 +116,17 @@ def calculate_metrics(y_true, y_pred):
     score_recall = recall_score(y_true, y_pred)
     score_precision = precision_score(y_true, y_pred)
     score_acc = accuracy_score(y_true, y_pred)
-    score_iou = iou(y_true, y_pred)
     score_balanced_acc = balanced_accuracy_score(y_true, y_pred)
 
-    return [score_jaccard, score_f1, score_recall, score_precision, score_acc, score_iou, score_balanced_acc]
+    return [score_jaccard, score_f1, score_recall, score_precision, score_acc, score_balanced_acc]
 
+'''
+Write the metrics to a .JSON file
+INPUT:
+    metrics : list of metrics
+    len_test_x : length of the test set
+    json_path : path to the .JSON file
+'''
 def write_metrics_to_file(metrics, len_test_x, json_path):
     metrics_dict = {
         "batch_size": batch_size,
@@ -107,11 +140,11 @@ def write_metrics_to_file(metrics, len_test_x, json_path):
         "recall": metrics[2] / len_test_x,
         "precision": metrics[3] / len_test_x,
         "accuracy": metrics[4] / len_test_x,
-        "iou": metrics[5] / len_test_x,
-        "balanced_accuracy": metrics[6] / len_test_x,
+        "balanced_accuracy": metrics[5] / len_test_x,
         "H": H,
         "W": W,
         "model_name": MODEL_NAME,
+        "early_stopping": EARLY_STOPPING,
     }
     out_file = open(json_path, "w")
 
@@ -119,66 +152,60 @@ def write_metrics_to_file(metrics, len_test_x, json_path):
 
     out_file.close()
 
-
-def evaluation(y_true, y_pred):
-    """ Ground truth """
-    y_true = y_true.cpu().numpy()
-    y_true = y_true > 0.5
-    y_true = y_true.astype(np.uint8)
-    y_true = y_true.reshape(-1)
-
-    """ Prediction """
-    y_pred = y_pred.cpu().numpy()
-    y_pred = y_pred > 0.5
-    y_pred = y_pred.astype(np.uint8)
-    y_pred = y_pred.reshape(-1)
-
-    precision, recall, thresholds = precision_recall_curve(y_true, y_pred)
-    fpr, tpr, thresholds = roc_curve(y_true, y_pred)
-
-    print('ROC', auc(fpr, tpr))
-        
-    print('PR AUC', auc(recall, precision))
-    
-
-def calculate_precicion_recall(y_true, y_pred):
-    """ Ground truth """
-    y_true = y_true.cpu().numpy()
-    y_true = y_true > 0.5
-    y_true = y_true.astype(np.uint8)
-    y_true = y_true.reshape(-1)
-
-    """ Prediction """
-    y_pred = y_pred.cpu().numpy()
-    y_pred = y_pred > 0.5
-    y_pred = y_pred.astype(np.uint8)
-    y_pred = y_pred.reshape(-1)
-
-    score_recall = recall_score(y_true, y_pred)
-    score_precision = precision_score(y_true, y_pred)
-
-    return score_recall, score_precision
-
-
+'''
+Convert a grayscale mask to a RGB mask
+INPUT:
+    mask : grayscale mask
+OUTPUT:
+    mask : RGB mask
+'''
 def mask_parse(mask):
     mask = np.expand_dims(mask, axis=-1)    ## (512, 512, 1)
     mask = np.concatenate([mask, mask, mask], axis=-1)  ## (512, 512, 3)
     return mask
 
-def count_ulcer_pixels(mask_image):
-    return np.count_nonzero(mask_image), np.size(mask_image)
+'''
+Count the number of ulcer pixels in a mask
+INPUT:
+    mask_image : mask image
+OUTPUT:
+    pxls : number of ulcer pixels
+'''
+def count_ulcer_pixels(mask_prediction):
+    return np.count_nonzero(mask_prediction), np.size(mask_prediction)
 
+'''
+Write body pixels to a .JSON file
+INPUT:
+    name : name of the image
+    count : number of ulcer pixels
+'''
 def write_body_pixels_to_json(name, count, total_pixels):
     ulcer_pixels_dict[name] = [count, total_pixels]
     out_file = open("ulcer_pixels.json", "w")
     json.dump(ulcer_pixels_dict, out_file, indent=4)
     out_file.close()
 
+'''
+Count ulcer pixels and write to a .JSON file
+INPUT:
+    mask_image : mask image
+    name : name of the image
+'''
 def create_ulcer_model_output(mask_image, name):
     pxls, total = count_ulcer_pixels(mask_image)
     print(pxls, total)
     write_body_pixels_to_json(name, pxls, total)
 
+'''
+Save the predicted images to a folder in the format: original image, ground truth mask segment on image, predicted mask segment on image
+INPUT:
+    y_true : ground truth mask
+    y_pred : predicted mask
+    image : original image
+    size : size of the image
+    name : name of the image
+'''
 def save_predicted_segmentation_images(y_true, y_pred, image, size, name):
     y_true = y_true[0].cpu().numpy()        ## (1, 512, 512)
     y_true = np.squeeze(y_true, axis=0)     ## (512, 512)     
@@ -205,25 +232,18 @@ def save_predicted_segmentation_images(y_true, y_pred, image, size, name):
 def main():
     print('Performing test on dataset', DATASET)
 
-    """ Seeding """
+    ''' Seeding '''
     seeding(42)
 
-    """ Folders """
-    #create_dir("results")
-
-    """ Load dataset """
-    #DETTE MÅ ENDRES FPR TESTING -----------------> MÅ HA RIKTIGE PATHS FOR TEST DATA
+    ''' Load dataset '''
     test_x = sorted(list(paths.list_images(AUGMENTED_DATA_BASE_PATH + 'test/image/')))
+    #test_x = sorted(list(paths.list_images('body_model_output/')))
     test_y = sorted(list(paths.list_images(AUGMENTED_DATA_BASE_PATH + 'test/mask/')))
 
-    # H = 512
-    # W = 512
-    # size = (W, H)
     checkpoint_path = "files/checkpoint_" + DATASET + "_BS_" + str(batch_size) + "_E_" + str(num_epochs) + "_LR_" + str(lr) + "_" + str(H) +  ".pth"
     
-    
 
-    """ Load the checkpoint """
+    ''' Load the checkpoint '''
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu') #this could be made global
     model = build_unet()
     model = model.to(device)
@@ -231,19 +251,16 @@ def main():
     model.load_state_dict(torch.load(checkpoint_path, map_location=device))
     model.eval()
 
-
-    metrics_score = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    ''' Initialize the metrics list '''
+    metrics_score = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     time_taken = []
-    recall_list = []
-    precision_list = []
-
 
     for i, (x, y) in tqdm(enumerate(zip(test_x, test_y)), total=len(test_x)):
-        """ Extract the name """
+        ''' Extract the name '''
         name = os.path.basename(x)
         name = name.split(".")[0]
         
-        """ Reading image """
+        ''' Reading image '''
         image = cv2.imread(x, cv2.IMREAD_COLOR) ## (512, 512, 3)
         ## image = cv2.resize(image, size)
         x = np.transpose(image, (2, 0, 1))      ## (3, 512, 512)
@@ -253,7 +270,7 @@ def main():
         x = torch.from_numpy(x)
         x = x.to(device)
 
-        """ Reading mask """
+        ''' Reading mask '''
         mask = cv2.imread(y, cv2.IMREAD_GRAYSCALE)  ## (512, 512)
         ## mask = cv2.resize(mask, size)
         y = np.expand_dims(mask, axis=0)            ## (1, 512, 512)
@@ -266,7 +283,7 @@ def main():
         
     
         with torch.no_grad():
-            """ Prediction and Calculating FPS """
+            ''' Prediction and Calculating FPS '''
             start_time = time.time()
 
             pred_y = model(x)
@@ -275,38 +292,24 @@ def main():
             total_time = time.time() - start_time
             time_taken.append(total_time)
 
-            """ Calculate metrics """
+            ''' Calculate metrics '''
+            print("Y", y.unique())
+            print("Pred range", pred_y.max(), pred_y.min())
+            
             score = calculate_metrics(y, pred_y)
             metrics_score = list(map(add, metrics_score, score))
-            #cf = generate_confusion_matrix(y, pred_y)
-            #plot_confusion_matrix(cf)
-            #evaluation(y, pred_y)
-            recall, precision = calculate_precicion_recall(y, pred_y)
             
-            recall_list.append(recall)
-            precision_list.append(precision)
            
             pred_y = pred_y[0].cpu().numpy()        ## (1, 512, 512)
             pred_y = np.squeeze(pred_y, axis=0)     ## (512, 512)
 
             pred_y = pred_y > 0.5
             pred_y = np.array(pred_y, dtype=np.uint8)
-            
-            print("Pred_y, unique values:")
-            print(np.unique(pred_y))
-            print(pred_y.min())
-            print("Y, unique values:")
-            print(y.unique())
-            
-            print("Pred_y, unique values:")
-            #print(set(tuple(pred_y[i]) for i in range(len(pred_y))) - set(tuple(y[i]) for i in range(len(y))))
-
-            
 
             save_predicted_segmentation_images(y, pred_y, image, size, name)
            
 
-        """ Saving masks """
+        ''' Saving masks '''
         ori_mask = mask_parse(mask)
         pred_y = mask_parse(pred_y)
         line = np.ones((size[1], 10, 3)) * 128
@@ -317,17 +320,16 @@ def main():
         cat_images = np.concatenate(
             [image, line, ori_mask, line, pred_y * 255], axis=1
         )
-        """ Writing the results to folder in the format: image, original mask, predicted mask"""
+        ''' Writing the results to folder in the format: image, original mask, predicted mask'''
         cv2.imwrite(results + name + ".png", cat_images)
 
-    """ Calculating the mean of the metrics """
+    ''' Calculating the mean of the metrics '''
     jaccard = metrics_score[0]/len(test_x)
     f1 = metrics_score[1]/len(test_x)
     recall = metrics_score[2]/len(test_x)
     precision = metrics_score[3]/len(test_x)
     acc = metrics_score[4]/len(test_x)
-    iou_mean = metrics_score[5]/len(test_x)
-    balanced_accuracy_score = metrics_score[6]/len(test_x)
+    balanced_accuracy_score = metrics_score[5]/len(test_x)
 
     write_metrics_to_file(metrics_score, len(test_x), json_path + DATASET + "_BS" + str(batch_size) + "E" + str(num_epochs) + "LR" + str(lr) + ".json")
 

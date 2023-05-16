@@ -1,7 +1,7 @@
 import json
 
 '''
-This file read two jsons containing the amount of pixels in the ulcer and the body 
+This script read two jsons containing the amount of pixels in the ulcer and the body 
 and calculate the ulcer factor by dividing the ulcer pixels by the body pixels
 The result is saved to a json file. 
 '''
@@ -25,10 +25,6 @@ for u_key, u_pxls in ulcer_json.items():
 
 for i in range(len(ulcer_values)):
         ulcer_factor_dict[image_ids[i]] = ulcer_values[i]/body_values[i]
-
-print(body_json)
-print("__________________________")
-print(ulcer_json)
 
 with open('ulcer_factor.json', 'w') as f:
     json.dump(ulcer_factor_dict, f)

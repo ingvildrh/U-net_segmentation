@@ -28,6 +28,8 @@ BODY_DETECTION_DATASET = 'body_detection_dataset'
 
 ''' 
 Create a directory 
+INPUT:
+    path : path to the directory you want to create
 '''
 def create_dir(path):
     if not os.path.exists(path):
@@ -36,8 +38,17 @@ def create_dir(path):
 
 '''
 Loads data from paths 
-Input: paths to images, masks, test images and tests ground truths
-Output: lits of file paths for all train_x, train_y, test_x, test_y
+INPUT: 
+    path_img : paths to the training images
+    path_mask : path to the corresponding training masks
+    path_val_img : paths to the validation images
+    path_val_mask : path to the corresponding validation masks
+    path_test_img : paths to the test images
+    path_test_mask : path to the corresponding test masks
+OUTPUT: 
+    (train_x, train_y) : tuple of paths to the training images and masks
+    (val_x, val_y) : tuple of paths to the validation images and masks
+    (test_x, test_y) : tuple of paths to the test images and masks
 '''
 def load_data(path_img, path_mask, path_val_img, path_val_mask, path_test_img, path_test_mask):
     train_x = sorted(list(paths.list_images(path_img)))
@@ -54,8 +65,11 @@ def load_data(path_img, path_mask, path_val_img, path_val_mask, path_test_img, p
 
 '''
 Augment the images data and the corresponding mask label data with 3 methods and save them to a different folders for training.
-Test data is not annotated. 
-Input: images to annotate, corresponding masks to annotate, path for saving of annotations, augment=True
+INPUT:
+    images : paths to the images to augment
+    masks : paths to the corresponding masks to augment
+    save_path : path to save the augmented images and masks
+    augment : boolean value to augment or not
 '''
 def augment_data(images, masks, save_path, augment=True):
     size = (H, W)
@@ -110,6 +124,9 @@ def augment_data(images, masks, save_path, augment=True):
 
             index += 1
 
+'''
+Empty the augmented data folder
+'''
 def empty_augmented_data():
     if os.path.exists(BODY_DETECTION_DATASET + "/train/"):
         shutil.rmtree(BODY_DETECTION_DATASET + "/train/")
@@ -119,12 +136,12 @@ def empty_augmented_data():
         shutil.rmtree(BODY_DETECTION_DATASET + "/test/")
    
 def main():
-    #empty_augmented_data()
+    empty_augmented_data()
 
     """ Seeding """
     np.random.seed(42)
 
-    (train_x, train_y), (val_x, val_y), (test_x, test_y) = load_data(train_image_folder, train_mask_folder, val_image_folder, val_mask_folder, test_image_folder, test_image_folder)
+    (train_x, train_y), (val_x, val_y), (test_x, test_y) = load_data(train_image_folder, train_mask_folder, val_image_folder, val_mask_folder, test_image_folder, test_mask_folder)
 
     print("Train: ")
     print(len(train_x), len(train_y))

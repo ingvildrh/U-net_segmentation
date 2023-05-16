@@ -1,1 +1,13 @@
 /files
+/predicted_segmentations
+/predicted_binary_segmentations 
+/model_output_predicted_fish_body_mask
+/binary_predictions_body_detections
+body_detection_dataset/
+augmented_data/
+binary_predictions_body_detections/
+.vscode/
+segment_predictions_body_detections/
+body_model_output/
+model_output_predicted_fish_body_mask/
+remove_background/

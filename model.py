@@ -4,7 +4,17 @@ import torch.nn as nn
 '''
 This model is fitted for training images with the size 512x512
 '''
+
+'''
+Class to create the convolutional block
+'''
 class conv_block(nn.Module):
+    '''
+    Init function to initialize the convolutional block
+    INPUT:
+        in_c : number of input channels
+        out_c : number of output channels
+    '''
     def __init__(self, in_c, out_c):
         super().__init__()
 
@@ -15,7 +25,13 @@ class conv_block(nn.Module):
         self.bn2 = nn.BatchNorm2d(out_c)
 
         self.relu = nn.ReLU()
-
+    '''
+    Forward function to perform the forward pass
+    INPUT:
+        inputs : input to the forward pass
+    OUTPUT:
+        x : output of the forward pass
+    '''
     def forward(self, inputs):
         x = self.conv1(inputs)
         x = self.bn1(x)
@@ -27,33 +43,73 @@ class conv_block(nn.Module):
 
         return x
 
+'''
+Class to create the encoder block
+'''
 class encoder_block(nn.Module):
+    '''
+    Init function to initialize the encoder block
+    INPUT:
+        in_c : number of input channels
+        out_c : number of output channels
+    '''
     def __init__(self, in_c, out_c):
         super().__init__()
 
         self.conv = conv_block(in_c, out_c)
         self.pool = nn.MaxPool2d((2, 2))
 
+    '''
+    Forward function to perform the forward pass
+    INPUT:
+        inputs : input to the forward pass
+    OUTPUT:
+        x : output of the forward pass
+        p : output of the pooling layer
+    '''
     def forward(self, inputs):
         x = self.conv(inputs)
         p = self.pool(x)
 
         return x, p
 
+'''
+Class to create the decoder block
+'''
 class decoder_block(nn.Module):
+    '''
+    Init function to initialize the decoder block
+    INPUT:
+        in_c : number of input channels
+        out_c : number of output channels
+    '''
     def __init__(self, in_c, out_c):
         super().__init__()
 
         self.up = nn.ConvTranspose2d(in_c, out_c, kernel_size=2, stride=2, padding=0)
         self.conv = conv_block(out_c+out_c, out_c)
 
+    '''
+    Forward function to perform the forward pass
+    INPUT:
+        inputs : input to the forward pass
+        skip : skip connection from the encoder block
+    OUTPUT:
+        x : output of the forward pass
+    '''
     def forward(self, inputs, skip):
         x = self.up(inputs)
         x = torch.cat([x, skip], axis=1)
         x = self.conv(x) 
         return x
 
+'''
+Class to create the UNet model
+'''
 class build_unet(nn.Module):
+    '''
+    Init function to initialize the UNet model
+    '''
     def __init__(self):
         super().__init__()
 
@@ -75,6 +131,13 @@ class build_unet(nn.Module):
         """ Classifier """
         self.outputs = nn.Conv2d(64, 1, kernel_size=1, padding=0)
 
+    '''
+    Forward function to perform the forward pass
+    INPUT:
+        inputs : input to the forward pass
+    OUTPUT: 
+        outputs : output of the forward pass
+    '''
     def forward(self, inputs):
         """ Encoder """
         s1, p1 = self.e1(inputs)

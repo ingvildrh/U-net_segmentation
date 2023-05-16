@@ -16,12 +16,24 @@ def seeding(seed):
     torch.cuda.manual_seed(seed)
     torch.backends.cudnn.deterministic = True
 
-""" Create a directory. """
+'''
+Create a directory if not exists
+INPUT:
+    path : path to a directory
+'''
 def create_dir(path):
     if not os.path.exists(path):
         os.makedirs(path)
 
-""" Calculate the time taken """
+'''
+Calculate the time taken for each epoch
+INPUT:
+    start_time : start time of the epoch
+    end_time : end time of the epoch
+OUTPUT: 
+    elapsed_mins : elapsed minutes
+    elapsed_secs : elapsed seconds
+'''
 def epoch_time(start_time, end_time):
     elapsed_time = end_time - start_time
     elapsed_mins = int(elapsed_time / 60)

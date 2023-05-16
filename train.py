@@ -5,6 +5,7 @@ from glob import glob
 import torch
 from torch.utils.data import DataLoader
 import torch.nn as nn
+from tqdm import tqdm
 
 
 from loss import DiceLoss, DiceBCELoss
@@ -15,9 +16,14 @@ import matplotlib.pyplot as plt
 from config import * 
 
 torch.cuda.empty_cache()
+EARLY_STOPPING = False
 
 if MODEL_NAME == 'model2':
     from model2 import build_unet
+elif MODEL_NAME == 'model3':
+    from model3 import build_unet
+elif MODEL_NAME == 'model4':
+    from model4 import build_unet
 else:
     from model import build_unet
 
@@ -100,14 +106,14 @@ if __name__ == "__main__":
         dataset=train_dataset,
         batch_size=batch_size,
         shuffle=True,
-        num_workers=2
+        num_workers=1 #num_workers=2
     )
 
     valid_loader = DataLoader(
         dataset=valid_dataset,
         batch_size=batch_size,
         shuffle=False,
-        num_workers=2
+        num_workers=1 #num_workers=2
     )
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")  
@@ -126,7 +132,7 @@ if __name__ == "__main__":
     best_valid_loss = float("inf")
     print("Training the model for the dataset", DATASET)
     print("Batch size:", batch_size, "Epochs:", num_epochs, "Learning rate:", lr, "H:", H, "W:", W)
-    for epoch in range(num_epochs):
+    for epoch in tqdm(range(num_epochs)):
         start_time = time.time()
 
         train_loss = train(model, train_loader, optimizer, loss_fn, device)
@@ -147,14 +153,19 @@ if __name__ == "__main__":
         plt.savefig(os.path.sep.join(["plots", "loss_plot" + DATASET+ "_BS_" + str(batch_size) + "_E_" + str(num_epochs) + "_LR_" + str(lr) + " .png"]))
 
         """ Saving the model """
-        if valid_loss < best_valid_loss:
-            data_str = f"Valid loss improved from {best_valid_loss:2.4f} to {valid_loss:2.4f}. Saving checkpoint: {checkpoint_path}"
-            print(data_str)
-
-            scheduler.step(valid_loss)
-
+        data_str = f"Valid loss improved from {best_valid_loss:2.4f} to {valid_loss:2.4f}. Saving checkpoint: {checkpoint_path}"
+        print(data_str)
+        if (valid_loss < best_valid_loss) and (best_valid_loss - valid_loss > 0.001):
+            patience = 0
             best_valid_loss = valid_loss
+            scheduler.step(valid_loss)
             torch.save(model.state_dict(), checkpoint_path)
+        else:
+            patience += 1
+            if patience > 5:
+                EARLY_STOPPING = True
+                print("Early stopping at epoch", epoch, "/", num_epochs) #stop the training
+                break 
 
         end_time = time.time()
         epoch_mins, epoch_secs = epoch_time(start_time, end_time)

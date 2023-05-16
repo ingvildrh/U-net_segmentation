@@ -5,7 +5,7 @@ import cv2
 from glob import glob
 from tqdm import tqdm
 import imageio
-from albumentations import HorizontalFlip, VerticalFlip, Rotate
+from albumentations import HorizontalFlip, VerticalFlip, Rotate, RandomBrightnessContrast
 from imutils import paths
 from config import *
 
@@ -35,8 +35,17 @@ def create_dir(path):
 
 '''
 Loads data from paths 
-Input: paths to images, masks, test images and tests ground truths
-Output: lits of file paths for all train_x, train_y, test_x, test_y
+INPUT: 
+    path_img : paths to the training images
+    path_mask : path to the corresponding training masks
+    path_val_img : paths to the validation images
+    path_val_mask : path to the corresponding validation masks
+    path_test_img : paths to the test images
+    path_test_mask : path to the corresponding test masks
+OUTPUT: 
+    (train_x, train_y) : tuple of paths to the training images and masks
+    (val_x, val_y) : tuple of paths to the validation images and masks
+    (test_x, test_y) : tuple of paths to the test images and masks
 '''
 def load_data(path_img, path_mask, path_val_img, path_val_mask, path_test_img, path_test_mask):
     train_x = sorted(list(paths.list_images(path_img)))
@@ -53,8 +62,11 @@ def load_data(path_img, path_mask, path_val_img, path_val_mask, path_test_img, p
 
 '''
 Augment the images data and the corresponding mask label data with 3 methods and save them to a different folders for training.
-Test data is not annotated. 
-Input: images to annotate, corresponding masks to annotate, path for saving of annotations, augment=True
+INPUT:
+    images : paths to the images to augment
+    masks : paths to the corresponding masks to augment
+    save_path : path to save the augmented images and masks
+    augment : boolean value to augment or not
 '''
 def augment_data(images, masks, save_path, augment=True):
     size = (H, W)
@@ -84,8 +96,14 @@ def augment_data(images, masks, save_path, augment=True):
             x3 = augmented["image"]
             y3 = augmented["mask"]
 
-            X = [x, x1, x2, x3]
-            Y = [y, y1, y2, y3]
+            aug = RandomBrightnessContrast (brightness_limit=0.2, contrast_limit=0.2, brightness_by_max=True, always_apply=True, p=0.5)
+            augmented = aug(image=x, mask=y)
+            x4 = augmented["image"]
+            y4 = augmented["mask"]
+
+
+            X = [x, x1, x2, x3, x4]
+            Y = [y, y1, y2, y3, y4]
 
         else:
             X = [x]
@@ -108,6 +126,9 @@ def augment_data(images, masks, save_path, augment=True):
 
             index += 1
 
+'''
+Empty the augmented data folder
+'''
 def empty_augmented_data():
     if os.path.exists(AUGMENTED_DATA_BASE_PATH + "/train/"):
         shutil.rmtree(AUGMENTED_DATA_BASE_PATH + "/train/")
