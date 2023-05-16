@@ -11,7 +11,7 @@ DATASET = '111_1111'
 H = 512
 W = 512
 size = (H, W)
-batch_size = 16 #limit is 18 for 255x255 images and 4 for 512x512 images
+batch_size = 12 #limit is 18 for 255x255 images and 4 for 512x512 images
 num_epochs = 200
 lr = 1e-4
 
